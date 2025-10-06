@@ -1,3 +1,10 @@
+**Nama anggota kelompok**:
+Laudya Michelle Alexandra (2406419594)
+Ali Akbar Murthadha (2406495754)
+Fidan Khalil Salman (2406408501)
+Ahmad Aqeel Saniy (2306275941)
+Haris Azzahra Lunaaya (2406425930)
+
 Tema            : Penjualan tiket olahraga (5 jenis olahraga)
 Nama Aplikasi   : SPORTICKET
 
@@ -53,10 +60,10 @@ Sporticket adalah platform penjualan tiket digital pertandingan olahraga yang di
 **Sumber initial dataset**
 Sumber Initial Dataset adalah synthetic data.
 Synthetic data yang maksudnya: Datanya tidak diambil langsung dari website resmi atau API, tapi dibuat secara manual dan acak dengan data yang mirip dunia nyata. Ini dilakukan untuk mencegah adanya copyright dan mudahnya mengelola data yang sudah bersih dan seperti nyata.
-Dataset akan ditaro di csv file. 
+Dataset akan disimpan di csv file. 
 Dataset-dataset ini untuk:
-Data pertandingan olahraga
-Data kursi tiket setiap pertandingannya 
+    Data pertandingan olahraga
+    Data kursi tiket setiap pertandingannya 
 
 Sepak bola 
 https://www.premierleague.com/en/matches?competition=8&season=2025&matchweek=7&month=10
@@ -87,5 +94,4 @@ https://seatgeek.com/the-garden-cup-tickets/tennis/2025-12-08-7-pm/17721058?quan
     Pembeli dapat melihat detail tiket dan riwayat pembelian, membeli tiket pertandingan, ganti/update jumlah tiket yang dibeli, membatalkan pembelian tiket, membuat review event, mengedit review event yang ia buat, dan menghapus review event yang ia buat.
 
 
-**Tautan PWS = **
-**Tautan design = **
+**Tautan PWS** = https://laudya-michelle-sporticket.pbp.cs.ui.ac.id/
