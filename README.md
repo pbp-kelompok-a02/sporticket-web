@@ -8,6 +8,10 @@ Haris Azzahra Lunaaya (2406425930)
 Tema            : Penjualan tiket olahraga (5 jenis olahraga)
 Nama Aplikasi   : SPORTICKET
 
+**ALUR PENGERJAAN MODUL**
+
+Account (michelle) → Event (aqeel) → Ticket (fidan) → Order (ali) → Review (luna)
+
 **Deskripsi Aplikasi**
 Sporticket adalah platform penjualan tiket digital pertandingan olahraga yang dirancang untuk memberikan kemudahan kepada penggemar olahraga sepak bola, basket, voli, badminton, dan tenis dalam membeli tiket untuk event-event olahraga favorit mereka. Aplikasi ini menawarkan pengalaman pengguna yang cepat, aman, dan efisien dalam membeli tiket untuk berbagai event olahraga, dengan integrasi pemilihan kategori tiket (reguler atau VIP), sistem notifikasi, dan akses mudah ke riwayat pembelian. Fitur-fitur lengkap aplikasi Sporticket dijelaskan lebih lanjut dalam bagian daftar modul.
 
@@ -88,8 +92,8 @@ Reference for ticketing:
 https://seatgeek.com/the-garden-cup-tickets/tennis/2025-12-08-7-pm/17721058?quantity=1
 
 **Deskripsi peran pengguna**
-- Admin.
-    Admin dapat membuat event pertandingan dan tiket pertandingan, melihat tiket dan event yang ada, mengedit tiket pertandingan dan event yang ada (ganti jadwal / lokasi), dan menghapus tiket pertandingan dan event yang ada.
+- Admin (hardcoded, 1 akun).
+    Admin dapat membuat event pertandingan dan tiket pertandingan, melihat tiket dan event yang ada, mengedit tiket pertandingan dan event yang ada (ganti jadwal / lokasi), dan menghapus tiket pertandingan dan event yang ada.    
 - Pembeli (Regular user).
     Pembeli dapat melihat detail tiket dan riwayat pembelian, membeli tiket pertandingan, ganti/update jumlah tiket yang dibeli, membatalkan pembelian tiket, membuat review event, mengedit review event yang ia buat, dan menghapus review event yang ia buat.
 
