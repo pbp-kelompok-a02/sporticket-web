@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Edit Ticket - Sporticket</title>
+{% endblock meta %}
+
+{% block content %}
+<div>
+  <div>
+    <div>
+      <a href="{% url 'ticket:show_tickets' %}">
+        Back to Tickets
+      </a>
+    </div>
+
+    <!-- Form -->
+    <div>
+      <div>
+        <h1>Edit Ticket</h1>
+      </div>
+
+      <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+          <div>
+            <label for="{{ field.id_for_label }}">
+              {{ field.label }}
+            </label>
+            <div>
+              {{ field }}
+            </div>
+            {% if field.help_text %}
+              <p>{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endfor %}
+
+        <div>
+          <a href="{% url 'ticket:show_tickets' %}">
+            Cancel
+          </a>
+          <button type="submit">
+            Update Ticket
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
