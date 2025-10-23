@@ -92,7 +92,7 @@ Reference for ticketing:
 https://seatgeek.com/the-garden-cup-tickets/tennis/2025-12-08-7-pm/17721058?quantity=1
 
 **Deskripsi peran pengguna**
-- Admin (hardcoded, 1 akun).
+- Admin (hardcoded, 1 akun superuser).
     Admin dapat membuat event pertandingan dan tiket pertandingan, melihat tiket dan event yang ada, mengedit tiket pertandingan dan event yang ada (ganti jadwal / lokasi), dan menghapus tiket pertandingan dan event yang ada.    
 - Pembeli (Regular user).
     Pembeli dapat melihat detail tiket dan riwayat pembelian, membeli tiket pertandingan, ganti/update jumlah tiket yang dibeli, membatalkan pembelian tiket, membuat review event, mengedit review event yang ia buat, dan menghapus review event yang ia buat.
