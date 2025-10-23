@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket History</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    thead {
+      background: #3b5998; /* biru header */
+      color: white;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+    tbody tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+    tbody tr:hover {
+      outline: 2px solid #3b82f6; /* garis biru saat hover */
+    }
+    a {
+      text-decoration: none;
+      margin-right: 8px;
+    }
+    a.edit {
+      color: #111;
+      font-weight: bold;
+    }
+    a.delete {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ticket History</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Match name</th>
+        <th>Ticket Amount</th>
+        <th>Seating</th>
+        <th>Price</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+        <tr>
+          <td>{{ order.ticket.event.name }}</td>
+          <td>{{ order.quantity }}</td>
+          <td>{{ order.ticket.get_category_display }}</td>
+          <td>Rp {{ order.harga }}</td>
+          <td>
+            {% if order.status == "pending" %}
+              <a href="{% url 'order:edit' order.ticket.id order.id %}" class="edit">Edit</a>
+              <a href="{% url 'order:cancel' order.id %}" class="delete">Delete</a>
+            {% elif order.status == "confirmed" %}
+              Bought
+            {% else %}
+              Cancelled
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5">Belum ada pesanan</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
