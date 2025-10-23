@@ -1,0 +1,39 @@
+{% load static %}
+
+<div id="review-section" class="mt-8">
+  <h2 class="text-2xl font-bold text-gray-800 mb-4 font-[Kanit]">Reviews</h2>
+
+  {% if user_has_ticket %}
+  <div class="mb-4">
+      <button onclick="openAddModal('{{ event.id }}')"
+              class="w-full px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]">
+          {% if user_has_review %}
+              Edit Your Review
+          {% else %}
+              Add Your Review
+          {% endif %}
+      </button>
+  </div>
+  {% endif %}
+
+    <div id="review-container" class="space-y-4">
+    {% for review in reviews %}
+            {% include 'review/card_review.html' with review=review user=request.user %}
+    {% empty %}
+      <p class="text-gray-500 font-[Kanit]">Belum ada review untuk event ini.</p>
+    {% endfor %}
+  </div>
+
+    {% if event.reviews.count > 3 %}
+  <div class="flex justify-center mt-6">
+    <a href="{% url 'review:list' event.id %}"
+       class="bg-[#537FB9] text-white font-[Kanit] px-5 py-2 rounded-lg hover:bg-[#3e6798] transition">
+      Show More Reviews
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{% include 'review/add_review.html' %}
+{% include 'review/edit_review.html' %}
+<script src="{% static 'review/review.js' %}"></script>

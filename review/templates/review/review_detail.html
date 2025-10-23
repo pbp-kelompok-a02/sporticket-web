@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto py-8 px-4">
+  <h1 class="text-3xl font-bold text-gray-800 mb-6 font-[Kanit]">
+    Reviews for {{ event.name }}
+  </h1>
+
+  {% if user_has_ticket %}
+  <div class="mb-4">
+      <button onclick="openAddModal('{{ event.id }}')"
+              class="w-full px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]">
+          {% if user_has_review %}
+              Edit Your Review
+          {% else %}
+              Add Your Review
+          {% endif %}
+      </button>
+  </div>
+  {% endif %}
+
+    <div class="flex gap-3 mb-4">
+        <button id="filter-all"
+            class="px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]"
+            data-filter="all">
+      All Reviews
+    </button>
+    <button id="filter-my"
+            class="px-4 py-2 rounded-lg bg-gray-200 text-[#537FB9] font-[Kanit] hover:bg-[#e0e7ef]"
+            data-filter="my">
+      My Reviews
+    </button>
+  </div>
+
+    <div id="review-list-container" data-event-id="{{ event.id }}" class="space-y-4">
+        {% include 'review/partials/review_list.html' with reviews=reviews user=request.user %}
+  </div>
+
+    <div class="mt-8">
+    <a href="{% url 'event:detail' event.id %}"
+       class="text-[#537FB9] font-[Kanit] hover:underline">
+      ← Kembali ke Detail Event
+    </a>
+  </div>
+</div>
+
+{% include 'review/add_review.html' %}
+{% include 'review/edit_review.html' %}
+<script src="{% static 'review.js' %}"></script>
+
+{% endblock %}
