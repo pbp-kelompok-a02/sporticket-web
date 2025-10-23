@@ -196,7 +196,6 @@ def profile_update(request):
 @login_required
 @require_POST
 def change_password(request):
-    """Single change password function that handles both AJAX and normal requests"""
     current = request.POST.get('current_password')
     new = request.POST.get('new_password')
     new2 = request.POST.get('new_password2')
