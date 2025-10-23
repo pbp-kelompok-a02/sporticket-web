@@ -1,0 +1,63 @@
+{% load static %}
+<article class="overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow duration-300 hover:shadow-lg">
+  <!-- Thumbnail -->
+  <div class="relative aspect-[16/9] overflow-hidden">
+    {% if event.poster %}
+      <img src="{{ event.poster }}" alt="{{ event.name }}" class="w-full h-full object-cover">
+    {% else %}
+      <div class="w-full h-full bg-gray-200"></div>
+    {% endif %}
+
+    <!-- Status Badges -->
+    <div class="absolute top-3 right-3 flex space-x-2 bg-white rounded-md p-2 shadow-lg">
+      {% if event.category == "badminton" %}
+        <img src="{% static 'images/badminton-logo.svg' %}" alt="Badminton" class="w-6 h-6">
+      {% elif object.category == "tennis" %}
+        <img src="{% static 'images/tennis-logo.svg' %}" alt="Tennis" class="w-6 h-6">
+      {% elif object.category == "basketball" %}
+        <img src="{% static 'images/basketball-logo.svg' %}" alt="Basketball" class="w-6 h-6">
+      {% elif event.category == "volleyball" %}
+        <img src="{% static 'images/volleyball-logo.svg' %}" alt="Volleyball" class="w-6 h-6">
+      {% else %}
+        <img src="{% static 'images/football-logo.svg' %}" alt="Football" class="w-6 h-6">
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="p-5">
+    <h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900">
+      <a href="{% url 'main:view_event' event.id %}" class="transition-colors hover:text-blue-600"> {{ event }} </a>
+    </h3>
+    <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">{{ event.venue }}</h2>
+
+    <div class="flex items-center space-x-2 text-gray-700">
+      <img src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/all-icons/calendar-hxx1j6ge7nbk1xlqmfl5w9.png/calendar-xoaigr9z259n0zw0pl1c.png" class="w-5 h-5">
+      <span class="text-sm font-medium">{{ event.date }}</span>
+    </div>
+
+    <br>
+
+    <button href="{% url 'event_detail' event.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+      Check Detail
+    </button>
+
+
+    <!-- temp
+    <div class="flex items-center">
+    {% with full_stars=event.rating|floatformat:0|add:0 has_half=event.rating|floatformat:1|slice:"-1:"|add:0 %}
+        {% for i in "12345" %}
+            {% if forloop.counter <= full_stars %}
+                <span class="text-yellow-400 text-xl">★</span>
+            {% elif forloop.counter == full_stars|add:1 and has_half >= 5 %}
+                <span class="text-yellow-400 text-xl">⯨</span>
+            {% else %}
+                <span class="text-gray-300 text-xl">☆</span>
+            {% endif %}
+        {% endfor %}
+    {% endwith %}
+    <span class="ml-2 text-sm text-gray-600">({{ product.rating }})</span>
+    </div>
+    -->
+
+</article>
