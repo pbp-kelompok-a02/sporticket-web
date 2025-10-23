@@ -23,7 +23,6 @@ class Ticket(models.Model):
 	def __str__(self):
 		return f'{self.event}: {self.get_category_display()}'
 
-	@property
 	def is_available(self, quantity=1):
 		return self.stock >= quantity
 

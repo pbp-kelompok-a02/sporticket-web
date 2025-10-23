@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from ticket.models import Ticket
 from ticket.forms import TicketForm
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -64,4 +64,18 @@ def edit_ticket(request, id):
 def delete_ticket(request, id):
     ticket = get_object_or_404(Ticket, pk=id)
     ticket.delete()
-    return HttpResponse(b"CREATED", status=201)
+    return HttpResponse(b"DELETED", status=201)
+
+def show_json(request):
+    ticket_list = Ticket.objects.all()
+    data = [
+        {
+            'id': str(ticket.id),
+            'category': ticket.category,
+            'price': ticket.price,
+            'stock': ticket.stock,
+        }
+        for ticket in ticket_list
+    ]
+
+    return JsonResponse(data, safe=False)
