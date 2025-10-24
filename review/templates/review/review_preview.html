@@ -24,16 +24,16 @@
     {% endfor %}
   </div>
 
-    {% if event.reviews.count > 3 %}
+
   <div class="flex justify-center mt-6">
     <a href="{% url 'review:list' event.id %}"
        class="bg-[#537FB9] text-white font-[Kanit] px-5 py-2 rounded-lg hover:bg-[#3e6798] transition">
       Show More Reviews
     </a>
   </div>
-  {% endif %}
+
 </div>
 
 {% include 'review/add_review.html' %}
 {% include 'review/edit_review.html' %}
-<script src="{% static 'review/review.js' %}"></script>
+<script src="{% static 'review.js' %}"></script>

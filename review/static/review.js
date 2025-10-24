@@ -2,7 +2,6 @@
 $(document).ready(function() {
 
     // === TAMBAH REVIEW ===
-    // Fungsi 'open' sekarang juga mengatur event-id di form
     window.openAddModal = function(eventId) {
         $('#addReviewForm').attr('data-event-id', eventId);
         $('#reviewAddModal').removeClass('hidden');
