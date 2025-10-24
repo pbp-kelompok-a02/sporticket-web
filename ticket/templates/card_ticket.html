@@ -1,41 +1,46 @@
 {% load static %}
 <article class="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden">
   <!-- Thumbnail -->
-  <div class="aspect-[16/9] relative overflow-hidden">
+  <div class="h-32 bg-gray-100 relative overflow-hidden flex items-center justify-center">
 
     <!-- Category Badge -->
     <div class="absolute top-3 left-3">
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-600 text-white">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#537FB9] text-white">
         {{ ticket.get_category_display }}
       </span>
     </div>
+    <span class="text-gray-400 text-sm">No image</span>
   </div>
 
   <!-- Content -->
   <div class="p-5">
-    <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
-      <a href="{% url 'ticket:ticket_detail' ticket.id %}" class="hover:text-green-600 transition-colors">
-        {{ ticket.event.name }}
+    <h3 class="text-3xl font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+      <a href="" class="hover:text-green-600 transition-colors">
+        <span>$</span>{{ ticket.price }}
       </a>
     </h3>
 
     <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
-      {{ ticket.event.description|truncatewords:20 }}
+      {{ ticket.event.name }}
     </p>
 
     <!-- Action Buttons -->
     <!-- UBAH UNTUK CEK ADMIN/USER -->
-      <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-        <a href="{% url 'ticket:ticket_detail' ticket.id %}" class="text-green-600 hover:text-green-700 font-medium text-sm transition-colors">
-          Read more
-        </a>
+      <div class="flex flex-col items-end pt-4 border-t border-gray-100">
         <div class="flex space-x-2">
-          <a href="{% url 'ticket:edit_ticket' ticket.id %}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
-            Edit
-          </a>
-          <a href="{% url 'ticket:delete_ticket' ticket.id %}" class="text-red-600 hover:text-red-700 text-sm transition-colors">
-            Delete
-          </a>
+          {% if user.is_superuser %}
+            <a href="{% url 'ticket:edit_ticket' ticket.id %}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
+              Edit
+            </a>
+            <button onclick="deleteTicket('{{ ticket.id }}')" 
+                    class="text-red-600 hover:text-red-700 text-sm transition-colors">
+              Delete
+            </button>
+          {% else %}
+            <button>
+              Buy Ticket
+            </button>
+          {% endif %}
         </div>
       </div>
   </div>
