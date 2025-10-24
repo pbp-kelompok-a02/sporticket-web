@@ -26,19 +26,22 @@
 
     <!-- Action Buttons -->
     <!-- UBAH UNTUK CEK ADMIN/USER -->
-    
       <div class="flex flex-col items-end pt-4 border-t border-gray-100">
         <div class="flex space-x-2">
-          <a href="{% url 'ticket:edit_ticket' ticket.id %}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
-            Edit
-          </a>
-          <a href="{% url 'ticket:delete_ticket_ajax' ticket.id %}" class="text-red-600 hover:text-red-700 text-sm transition-colors">
-            Delete
-          </a>
+          {% if user.is_superuser %}
+            <a href="{% url 'ticket:edit_ticket' ticket.id %}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
+              Edit
+            </a>
+            <button onclick="deleteTicket('{{ ticket.id }}')" 
+                    class="text-red-600 hover:text-red-700 text-sm transition-colors">
+              Delete
+            </button>
+          {% else %}
+            <button>
+              Buy Ticket
+            </button>
+          {% endif %}
         </div>
       </div>
-      
-
-    
   </div>
 </article>

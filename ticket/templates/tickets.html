@@ -19,9 +19,11 @@
     </div>
 
     <!-- CEK USER ATAU ADMIN -->
+    {% if user.is_superuser %}
       <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-white text-[#537FB9] font-semibold outline outline-2 outline-[#537FB9] outline-offset-[-2px] rounded-md hover:bg-[#537FFF] hover:text-white transition-colors mb-4">
         Create Ticket
       </button>
+    {% endif %}
 
     <!-- Ticket Grid -->
     {% if not ticket_list %}
@@ -63,7 +65,7 @@
 </div>
 
 <script>
-
+const csrfToken = '{{ csrf_token }}';
 // Refresh ticket list
 async function refreshTickets() {
   const loading = document.getElementById("loading");
@@ -88,21 +90,7 @@ async function refreshTickets() {
     }
 
     tickets.forEach(ticket => {
-      const card = `
-        <div class="p-4 bg-white rounded-lg shadow flex justify-between items-center">
-          <div>
-            <h3 class="text-lg font-semibold">${ticket.event || 'Unknown Event'}</h3>
-            <p class="text-gray-600">Category: ${ticket.category || '-'}</p>
-            <p class="text-gray-600">Price: $${ticket.price}</p>
-            <p class="text-gray-600">Stock: ${ticket.stock}</p>
-          </div>
-          <button onclick="deleteTicket('${ticket.id}')"
-                  class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-            Delete
-          </button>
-        </div>
-      `;
-      container.innerHTML += card;
+      container.innerHTML += ticket.html;
     });
   } catch (err) {
     loading.textContent = "Failed to load tickets 😢";
@@ -111,16 +99,20 @@ async function refreshTickets() {
 
 // Delete ticket
 async function deleteTicket(id) {
-  const response = await fetch(`/ticket/delete-ticket/${id}/`, {
-    method: "DELETE",
-    headers: { "X-CSRFToken": csrfToken }
+  const response = await fetch(`/ticket/tickets/${id}/delete/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
   });
+
   if (response.ok) {
     refreshTickets();
+  } else {
+    alert("Failed to delete ticket!");
   }
 }
 
-const csrfToken = '{{ csrf_token }}';
 // Add new ticket via AJAX
 document.getElementById("submitNews").addEventListener("click", async function(e) {
   e.preventDefault();

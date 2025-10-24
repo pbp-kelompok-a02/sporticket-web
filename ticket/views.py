@@ -11,12 +11,9 @@ import json
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 from django.contrib.auth.decorators import user_passes_test
+from django.template.loader import render_to_string
 
-def is_admin(user):
-    return user.is_authenticated and user.role == 'Admin'
-
-# @user_passes_test(is_admin)
-# @login_required
+@login_required
 def show_tickets(request):
     ticket_list = Ticket.objects.all()
     first_ticket = ticket_list.first()
@@ -29,8 +26,7 @@ def show_tickets(request):
     }
     return render(request, "tickets.html", context)
 
-# @user_passes_test(is_admin)
-# @login_required
+@login_required
 def create_ticket(request):
     form = TicketForm(request.POST or None)
 
@@ -41,9 +37,8 @@ def create_ticket(request):
     context = {'form': form}
     return render(request, "create_ticket.html", context)
 
-# @user_passes_test(is_admin)
-# @login_required
-# @csrf_exempt
+@login_required
+@csrf_exempt
 def edit_ticket(request, id):
     ticket = get_object_or_404(Ticket, pk=id)
     form = TicketForm(request.POST or None, instance=ticket)
@@ -52,13 +47,12 @@ def edit_ticket(request, id):
         form.save()
         return redirect('ticket:show_tickets')
     
-    context = {'form': form}
+    context = {'form': form, 'ticket': ticket}
     return render(request, "edit_ticket.html", context)
 
-# @user_passes_test(is_admin)
-# @login_required
-# @csrf_exempt
-# @require_POST
+@login_required
+@csrf_exempt
+@require_POST
 def delete_ticket(request, id):
     ticket = get_object_or_404(Ticket, pk=id)
     ticket.delete()
@@ -73,6 +67,7 @@ def show_json(request):
             'category': ticket.event.category if ticket.event else None,
             'price': float(ticket.price),
             'stock': ticket.stock,
+            'html': render_to_string('card_ticket.html', {'ticket': ticket, 'user': request.user}, request=request)
         }
         for ticket in ticket_list
     ]
@@ -80,7 +75,7 @@ def show_json(request):
 
 @csrf_exempt
 def delete_ticket_ajax(request, id):
-    if request.method == 'GET':
+    if request.method == 'POST':
         ticket = get_object_or_404(Ticket, pk=id)
         ticket.delete()
         return JsonResponse({'deleted': True})
