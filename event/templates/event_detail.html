@@ -1,8 +1,5 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block content %}
-<div class="min-h-screen w-full bg-gray-50">
+{% extends 'base.html' %} {% load static %} {% block content %}
+<div class="min-h-screen w-full bg-gray-50 mt-16">
   <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
     <!-- Back Navigation -->
     <div class="mb-6">
@@ -53,8 +50,8 @@
         <div class="prose prose-lg max-w-none">
           <div class="text-base leading-relaxed whitespace-pre-line text-gray-700 sm:text-lg">{{ event.description }}</div>
         </div>
+          {% if is_admin %}
           <br>
-          {% if user.is_superuser %}
                 <div class="flex space-x-3">
                     <a href="{% url 'event:edit_event' event.match_id %}"
                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
@@ -65,17 +62,8 @@
                        onclick="return confirm('Are you sure?');">
                         Delete Event
                     </a>
-                    <a href="{% url 'ticket:show_tickets' event.match_id %}"
-                       class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                        Create Ticket
-                    </a>
                 </div>
-          {% else %}
-                <a href="{% url 'ticket:show_tickets' event.match_id %}"
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-                    Buy Ticket
-                </a>
-          {% endif %}
+                {% endif %}
       </div>
         <!-- Review Section -->
         <div class="bg-white rounded-lg shadow-lg p-6">
