@@ -2,6 +2,7 @@ import csv
 from django.core.management.base import BaseCommand
 from event.models import Event
 from datetime import datetime
+from django.utils import timezone
 
 class Command(BaseCommand):
     help = 'Import events from CSV'
@@ -12,6 +13,7 @@ class Command(BaseCommand):
             for row in reader:
                 date_str = f"{row['date']} {row['time']}"
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d %I:%M%p")
+                date_obj = timezone.make_aware(date_obj)
                 category = row['name'].split()[0].lower()
                 Event.objects.update_or_create(
                     match_id=row['match_id'],

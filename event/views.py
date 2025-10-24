@@ -117,7 +117,7 @@ def show_json(request):
             'description': event.description,
             'poster': str(event.poster) if event.poster else None,
             'venue': event.venue,
-            'date': event.date.isoformat() if event.date else None,  # Convert datetime to string
+            'date': event.date.isoformat() if event.date else None,
             'capacity': event.capacity,
             'category': event.category,
         }
