@@ -68,6 +68,9 @@ Dataset akan disimpan di csv file.
 Dataset-dataset ini untuk:
     Data pertandingan olahraga
     Data kursi tiket setiap pertandingannya 
+    Data event
+
+https://www.kaggle.com/datasets/nilnomics/opening-day-ticket-prices/data
 
 Sepak bola 
 https://www.premierleague.com/en/matches?competition=8&season=2025&matchweek=7&month=10

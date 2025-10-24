@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Event(models.Model):
+	match_id = models.CharField(max_length=100, unique=True)
 	name = models.CharField(max_length=255)
 	home_team = models.CharField(max_length=255)
 	away_team = models.CharField(max_length=255)
