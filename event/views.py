@@ -9,7 +9,7 @@ from event.models import Event
 from event.forms import EventForm
 
 def is_admin(user):
-    return user.is_authenticated and user.role == 'Admin'
+    return user.is_authenticated and user.is_superuser
 
 def show_event_main(request):
     event_list = Event.objects.all()
