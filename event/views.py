@@ -9,7 +9,7 @@ from event.models import Event
 from event.forms import EventForm
 
 def is_admin(user):
-    return user.is_authenticated and user.role == 'Admin'
+    return user.is_authenticated and user.is_superuser
 
 def show_event_main(request):
     event_list = Event.objects.all()
@@ -74,33 +74,87 @@ def delete_event(request, match_id):
     event.delete()
     return redirect('event:show_event_main')
 
+
 @user_passes_test(is_admin)
 @csrf_exempt
 def add_event_ajax(request):
-    name = strip_tags(request.POST.get('name'))
-    category = request.POST.get('category')
-    date = request.POST.get('date')
-    venue = strip_tags(request.POST.get('venue'))
-    capacity = request.POST.get('capacity')
-    home_team = strip_tags(request.POST.get('home_team'))
-    away_team = strip_tags(request.POST.get('away_team'))
-    description = strip_tags(request.POST.get('description'))
-    poster = request.POST.get('poster')
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
 
-    new_event = Event(
-        name=name,
-        category=category,
-        date=date,
-        venue=venue,
-        capacity=capacity,
-        home_team=home_team,
-        away_team=away_team,
-        description=description,
-        poster=poster,
-    )
-    new_event.save()
+    try:
+        import json
+        data = json.loads(request.body)
 
-    return HttpResponse(b"CREATED", status=201)
+        name = strip_tags(data.get('name', ''))
+        category = data.get('category', '').lower()
+        date = data.get('date', '')
+        venue = strip_tags(data.get('venue', ''))
+        capacity = data.get('capacity', 0)
+        home_team = strip_tags(data.get('home_team', ''))
+        away_team = strip_tags(data.get('away_team', ''))
+        description = strip_tags(data.get('description', ''))
+        poster = data.get('poster', '')
+
+        # Generate match_id based on category
+        category_prefixes = {
+            'basketball': 'N',
+            'badminton': 'B',
+            'football': 'F',
+            'tennis': 'T',
+            'volleyball': 'V'
+        }
+
+        prefix = category_prefixes.get(category, 'X')  # 'X' as fallback
+
+
+        event_count = Event.objects.filter(category=category).count()
+        next_number = event_count + 1
+        # Generate the match_id
+        match_id = f"{prefix}{next_number}"
+
+        # Check if match_id already exists (safety check)
+        while Event.objects.filter(match_id=match_id).exists():
+            next_number += 1
+            match_id = f"{prefix}{next_number}"
+
+        new_event = Event(
+            match_id=match_id,
+            name=name,
+            category=category,
+            date=date,
+            venue=venue,
+            capacity=capacity,
+            home_team=home_team,
+            away_team=away_team,
+            description=description,
+            poster=poster,
+        )
+        new_event.save()
+
+        # Return the event data in the expected format
+        event_data = {
+            'match_id': str(new_event.match_id),
+            'name': new_event.name,
+            'home_team': new_event.home_team,
+            'away_team': new_event.away_team,
+            'description': new_event.description,
+            'poster': str(new_event.poster) if new_event.poster else None,
+            'venue': new_event.venue,
+            'date': new_event.date,
+            'capacity': new_event.capacity,
+            'category': new_event.category,
+        }
+
+        return JsonResponse({
+            'success': True,
+            'event': event_data,
+            'message': 'Event added successfully'
+        }, status=201)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
 
 def show_json(request):
