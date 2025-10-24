@@ -1,18 +1,82 @@
-<!-- temporary, cuman buat template gw -->
-
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% block meta %} {% endblock meta %}
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-    <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>{% block title %}{{ app_title }}{% endblock %}</title>
   </head>
   <body>
-    {% block content %} {% endblock content %}
+    {% if not request.path == '/login/' and not request.path == '/register/' %}
+      {% include 'navbar.html' %}
+    {% endif %}
+
+    <div class="container">
+      <main>
+        {% block content %}{% endblock content %}
+      </main>
+    </div>
+
     {% include 'toast.html' %}
-    {% include 'modal.html' %}
+    {% if not request.path == 'account/login/' and not request.path == 'account/register/' %}
+      {% include 'modal.html' %}
+    {% endif %}
+
+    <form style="display:none">{% csrf_token %}</form>
+
+    <script>
+    function handleLogoutClick(e, url) {
+      e.preventDefault();
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+        }
+      }).then(response => {
+        if (response.ok) {
+          showToast({
+            title: "Logged Out",
+            message: "You have been logged out successfully.",
+            type: "success"
+          });
+          setTimeout(() => {
+            window.location.href = "{% url 'account:login' %}";
+          }, 1200);
+        } else {
+          showToast({
+            title: "Error",
+            message: "Logout failed.",
+            type: "error"
+          });
+        }
+      }).catch(() => {
+        showToast({
+          title: "Error",
+          message: "Network error during logout.",
+          type: "error"
+        });
+      });
+    }
+
+    // Desktop logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function(e) {
+        handleLogoutClick(e, this.href);
+      });
+    }
+
+    // Mobile logout
+    const logoutBtnMobile = document.getElementById('logout-btn-mobile');
+    if (logoutBtnMobile) {
+      logoutBtnMobile.addEventListener('click', function(e) {
+        handleLogoutClick(e, this.href);
+      });
+    }
+    </script>
   </body>
 </html>
