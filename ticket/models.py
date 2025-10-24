@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-
+import uuid
 
 class Ticket(models.Model):
 	CATEGORY_VIP = 'VIP'
@@ -10,6 +10,7 @@ class Ticket(models.Model):
 		(CATEGORY_REGULAR, 'Reguler'),
 	]
 
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	event = models.ForeignKey(
 		'event.Event',
 		on_delete=models.CASCADE,
