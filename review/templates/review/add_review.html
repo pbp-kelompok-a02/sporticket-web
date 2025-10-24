@@ -1,30 +1,60 @@
-<div id="reviewAddModal"
-     class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
-    <h3 class="text-lg font-bold mb-4 text-[#537FB9] font-[Kanit]">Add Your Review</h3>
-
-        <form id="addReviewForm" data-event-id="">
-      {% csrf_token %}
-      <label class="block mb-2 text-gray-700 font-[Kanit]">Rating</label>
-      <select name="rating" class="border-gray-300 rounded-md w-full mb-3 p-2 font-[Kanit]">
-        <option value="5">5</option>
-        <option value="4">4</option>
-        <option value="3">3</option>
-        <option value="2">2</option>
-        <option value="1">1</option>
-      </select>
-
-      <label class="block mb-2 text-gray-700 font-[Kanit]">Comment</label>
-      <textarea name="komentar"
-                class="w-full border-gray-300 rounded-md p-2 mb-4 font-[Kanit]"
-                placeholder="Tulis review kamu..."></textarea>
-
-      <div class="flex justify-end gap-3">
-        <button type="button" onclick="closeAddModal()"
-                class="bg-gray-300 text-gray-700 px-3 py-1 rounded-md font-[Kanit]">Cancel</button>
-        <button type="submit"
-                class="bg-[#537FB9] text-white px-3 py-1 rounded-md font-[Kanit]">Submit</button>
-      </div>
-    </form>
-  </div>
+<!-- Add Review Modal -->
+<div id="addReviewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+  <div class="bg-white rounded-lg max-w-md w-full mx-auto">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-6 border-b border-gray-200">
+      <h3 class="text-xl font-bold text-gray-800 font-[Kanit]">Add Your Review</h3>
+      <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Modal Body -->
+    <div class="p-6">
+      <form id="add-review-form">
+        {% csrf_token %}
+        <!-- Rating -->
+        <div class="mb-6">
+          <label class="block text-gray-700 font-[Kanit] font-medium mb-3">Rating</label>
+          <div class="flex space-x-2 justify-center" id="rating-stars">
+            {% for i in "12345" %}
+            <button type="button" 
+                    class="text-3xl rating-star transition duration-200"
+                    data-rating="{{ forloop.counter }}"
+                    onmouseover="hoverStars('{{ forloop.counter }}')"
+                    onmouseout="resetStars()"
+                    onclick="setRating('{{ forloop.counter }}')">
+              ☆
+            </button>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="rating" id="rating-value" required>
+        </div>
+        
+        <!-- Comment -->
+        <div class="mb-6">
+          <label for="komentar" class="block text-gray-700 font-[Kanit] font-medium mb-3">Comment</label>
+          <textarea name="komentar" id="komentar" 
+                    rows="4" 
+                    placeholder="Share your experience..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#537FB9] focus:border-transparent resize-none font-[Kanit]"></textarea>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div class="flex space-x-3">
+          <button type="button" 
+                  onclick="closeAddModal()"
+                  class="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200 font-[Kanit] font-medium">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="flex-1 px-4 py-3 bg-[#537FB9] text-white rounded-lg hover:bg-[#3e6798] transition duration-200 font-[Kanit] font-medium">
+            Submit Review
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

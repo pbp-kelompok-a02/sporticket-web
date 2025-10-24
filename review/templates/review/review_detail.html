@@ -3,43 +3,59 @@
 
 {% block content %}
 
-<div class="max-w-3xl mx-auto py-8 px-4">
-  <h1 class="text-3xl font-bold text-gray-800 mb-6 font-[Kanit]">
-    {{ event.name }} Reviews
-  </h1>
+<!-- Main Container dengan padding top untuk navbar dan full viewport height -->
+<div class="min-h-screen bg-gray-50 pt-20"> <!-- Added background and more top padding -->
+  <div class="max-w-2xl mx-auto py-8 px-4"> <!-- Reduced max-width to 2xl for better centering -->
+    
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2 font-[Kanit]">
+        {{ event.name }} Reviews
+      </h1>
+      <p class="text-gray-600 font-[Kanit]">{{ reviews.count }} Reviews</p>
+    </div>
 
-  {% if user_has_ticket %}
-  <div class="mb-4">
-      <button onclick="openAddModal('{{ event.id }}')"
-              class="w-full px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]">
-              Add Your Review
+    <!-- Add Review Button Section -->
+    {% if user_has_ticket %}
+    <div class="text-center mb-8">
+      <button onclick="openAddModal('{{ event.match_id }}')"
+              class="px-8 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
+        + Add Your Review
       </button>
+    </div>
+    {% else %}
+    <div class="text-center mb-8">
+      <p class="text-gray-500 text-sm font-[Kanit] bg-gray-100 inline-block px-4 py-2 rounded-lg">
+        You need to have a confirmed ticket to add a review
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Filter Buttons - Centered with equal width -->
+    <div class="flex justify-center space-x-4 mb-8">
+      <button id="filter-all"
+              class="flex-1 max-w-[160px] px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-medium shadow-sm"
+              data-filter="all">
+        All Reviews
+      </button>
+      <button id="filter-my"
+              class="flex-1 max-w-[160px] px-6 py-3 rounded-lg bg-gray-200 text-[#537FB9] font-[Kanit] hover:bg-gray-300 transition duration-200 font-medium shadow-sm"
+              data-filter="my">
+        My Reviews
+      </button>
+    </div>
+
+    <!-- Review List Container -->
+    <div id="review-list-container" 
+         data-event-id="{{ event.match_id }}" 
+         class="space-y-6 w-full">
+      {% include 'review/partials/review_list.html' with reviews=reviews user=request.user %}
+    </div>
+
   </div>
-  {% endif %}
-
-    <div class="flex gap-3 mb-4">
-    <button id="filter-all"
-            class="px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]"
-            data-filter="all">
-      All Reviews
-    </button>
-    <button id="filter-my"
-            class="px-4 py-2 rounded-lg bg-gray-200 text-[#537FB9] font-[Kanit] hover:bg-[#e0e7ef]"
-            data-filter="my">
-      My Reviews
-    </button>
-  </div>
-
-    <div id="review-list-container" data-event-id="{{ event.id }}" class="space-y-4">
-    {% include 'review/partials/review_list.html' with reviews=reviews user=request.user %}
-  </div>
-
-
 </div>
 
-{% include 'review/add_review.html' %}
-{% include 'review/edit_review.html' %}
 
-<script src="{% static 'review.js' %}"></script>
+<script src="{% static 'review/review.js' %}"></script>
 
 {% endblock %}
