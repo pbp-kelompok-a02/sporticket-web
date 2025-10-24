@@ -1,15 +1,15 @@
+from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
 from review.models import Review
 from django.db.models import Avg, Count
-
-from .utils import admin_required, is_admin
-
-import event
 from event.models import Event
 from event.forms import EventForm
+
+def is_admin(user):
+    return user.is_authenticated and user.role == 'Admin'
 
 def show_event_main(request):
     event_list = Event.objects.all()
@@ -20,17 +20,17 @@ def show_event_main(request):
     if filter_category and filter_category != 'all':
         event_list = event_list.filter(category=filter_category)
 
-    is_user_admin = request.user.is_authenticated and is_admin(request.user)
+
 
     context = {
         'event_list': event_list,
         'filter_category': filter_category,
         'categories': categories,
-        'is_admin': is_user_admin,
+        'is_admin': request.user.is_superuser,
     }
     return render(request, 'event_main.html', context)
 
-@admin_required
+@user_passes_test(is_admin)
 def add_event(request):
     form = EventForm(request.POST or None)
 
@@ -55,12 +55,11 @@ def event_detail(request, match_id):
         'reviews': reviews,
         'user_review': user_review,
         'review_form': review_form,
-        'is_admin': request.user.is_authenticated and hasattr(request.user,
-                                                              'profile') and request.user.profile.role == 'Admin',
+        'is_admin': request.user.is_superuser,
     }
     return render(request, 'event_detail.html', context)
 
-@admin_required
+@user_passes_test(is_admin)
 def edit_event(request, id):
     event = get_object_or_404(Event, pk=id)
     form = EventForm(request.POST or None, instance=event)
@@ -71,13 +70,13 @@ def edit_event(request, id):
 
     return render(request, 'edit_event.html', context)
 
-@admin_required
+@user_passes_test(is_admin)
 def delete_event(request, id):
     event = get_object_or_404(Event, pk=id)
     event.delete()
     return redirect('event:show_event_main')
 
-@admin_required
+@user_passes_test(is_admin)
 @csrf_exempt
 def add_event_ajax(request):
     name = strip_tags(request.POST.get('name'))
