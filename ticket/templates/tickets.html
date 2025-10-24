@@ -55,7 +55,9 @@
           </div>
           <div id="ticket-container" class="flex flex-col space-y-3 w-full">
             {% for ticket in ticket_list %}
-              {% include 'card_ticket.html' with ticket=ticket %}
+              <div id="ticket-{{ ticket.id }}">
+                {% include 'card_ticket.html' with ticket=ticket %}
+              </div>
             {% endfor %}
           </div>
         </div>
@@ -107,46 +109,80 @@ async function deleteTicket(id) {
   });
 
   if (response.ok) {
-    refreshTickets();
+    const el = document.getElementById(`ticket-${id}`);
+    if (el) el.remove();
   } else {
     alert("Failed to delete ticket!");
   }
 }
 
 // Add new ticket via AJAX
-document.getElementById("submitNews").addEventListener("click", async function(e) {
-  e.preventDefault();
+function showModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modal.classList.remove('hidden'); 
+  setTimeout(() => {
+    modalContent.classList.remove('opacity-0', 'scale-95');
+    modalContent.classList.add('opacity-100', 'scale-100');
+  }, 50); 
+}
 
-  const eventId = document.getElementById("event").value;
-  const category = document.getElementById("category").value;
-  const price = document.getElementById("price").value;
-  const stock = document.getElementById("stock").value;
+function hideModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modalContent.classList.remove('opacity-100', 'scale-100');
+  modalContent.classList.add('opacity-0', 'scale-95');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 150); 
+}
 
-  if (!category || !price || !stock ) return alert("Please fill all fields");
+// Event delegation: karena modal hidden, listener dipasang di document
+submitBtn.addEventListener('click', async function(e) {
+  if (e.target && e.target.id === 'submitNews') {
+    e.preventDefault();
 
-  const response = await fetch("{% url 'ticket:add_ticket_ajax' %}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrfToken
-    },
-    body: JSON.stringify({
-      event_id: parseInt(eventId),
-      category: category,
-      price: parseFloat(price),
-      stock: parseInt(stock)
-    })
-  });
+    const eventId = document.getElementById("event").value;
+    const category = document.getElementById("category").value;
+    const price = document.getElementById("price").value;
+    const stock = document.getElementById("stock").value;
 
-  if (response.ok) {
-    hideModal();
-    refreshTickets();
-    document.getElementById("newsForm").reset();
-  } else {
-    alert("Failed to create ticket");
+    if (!category || !price || !stock) return alert("Please fill all fields");
+
+    try {
+      const response = await fetch("{% url 'ticket:add_ticket_ajax' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({
+          event_id: parseInt(eventId),
+          category: category,
+          price: parseFloat(price),
+          stock: parseInt(stock)
+        })
+      });
+
+      if (response.ok) {
+        const newTicket = await response.json();
+        if (newTicket.error) {
+          alert("Server error: " + newTicket.error);
+          return;
+        }
+        const container = document.getElementById("ticket-container");
+        container.insertAdjacentHTML('afterbegin', newTicket.html);
+        hideModal();
+        document.getElementById("newsForm").reset();
+      } else {
+        const errData = await response.json().catch(()=>({}));
+        alert("Failed to create ticket: " + (errData.error || response.statusText));
+      }
+    } catch(err) {
+      console.error(err);
+      alert("Error creating ticket");
+    }
   }
 });
-
-document.addEventListener("DOMContentLoaded", refreshTickets);
 </script>
 {% endblock content %}

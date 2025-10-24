@@ -14,12 +14,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
 
 @login_required
-def show_tickets(request):
-    ticket_list = Ticket.objects.all()
+def show_tickets(request, match_id):
+    event = get_object_or_404(Event, match_id=match_id)
+    ticket_list = Ticket.objects.filter(event=event).order_by('-id')
     first_ticket = ticket_list.first()
     event_list = Event.objects.all()
 
     context = {
+        'event': event,
         'ticket_list': ticket_list,
         'first_ticket': first_ticket,
         'event_list': event_list
@@ -27,14 +29,20 @@ def show_tickets(request):
     return render(request, "tickets.html", context)
 
 @login_required
-def create_ticket(request):
+def create_ticket(request, match_id):
     form = TicketForm(request.POST or None)
+    event = get_object_or_404(Event, match_id=match_id)
 
     if form.is_valid() and request.method == "POST":
-        form.save()
-        return redirect('ticket:show_tickets')
+        ticket = form.save(commit=False)
+        ticket.event = event
+        ticket.save()
+        return redirect('ticket:show_tickets', match_id=event.match_id)
 
-    context = {'form': form}
+    context = {
+        'form': form,
+        'event': event
+    }
     return render(request, "create_ticket.html", context)
 
 @login_required
@@ -58,8 +66,12 @@ def delete_ticket(request, id):
     ticket.delete()
     return HttpResponse(b"DELETED", status=201)
 
-def show_json(request):
-    ticket_list = Ticket.objects.all().order_by('-id')  # urut dari terbaru
+def show_json(request, match_id=None):
+    if match_id:
+        event = get_object_or_404(Event, match_id=match_id)
+        ticket_list = Ticket.objects.filter(event=event).order_by('-id')
+    else:
+        ticket_list = Ticket.objects.all().order_by('-id')
     data = [
         {
             'id': ticket.id,
@@ -84,19 +96,21 @@ def delete_ticket_ajax(request, id):
 @csrf_exempt
 def add_ticket_ajax(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        event = Event.objects.get(match_id=data['event_id'])
-        ticket = Ticket.objects.create(
-            event=event,
-            category=data['category'],
-            price=data['price'],
-            stock=data['stock']
-        )
-        return JsonResponse({
-            'id': ticket.id,
-            'event': ticket.event.match_id,
-            'category': ticket.category,
-            'price': float(ticket.price),
-            'stock': ticket.stock
-        })
+        try:
+            data = json.loads(request.body)
+            event = Event.objects.get(match_id=data['event_id'])
+            ticket = Ticket.objects.create(
+                event=event,
+                category=data['category'],
+                price=data['price'],
+                stock=data['stock']
+            )
+            html = render_to_string('card_ticket.html', {'ticket': ticket, 'user': request.user}, request=request)
+            html = f'<div id="ticket-{ticket.id}">{html}</div>'
+            return JsonResponse({
+                'id': ticket.id,
+                'html': html
+            }, status=200)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request'}, status=400)
