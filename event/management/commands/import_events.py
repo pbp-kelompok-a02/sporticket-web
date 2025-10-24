@@ -12,6 +12,7 @@ class Command(BaseCommand):
             for row in reader:
                 date_str = f"{row['date']} {row['time']}"
                 date_obj = datetime.strptime(date_str, "%Y-%m-%d %I:%M%p")
+                category = row['name'].split()[0].lower()
                 Event.objects.update_or_create(
                     match_id=row['match_id'],
                     defaults={
@@ -22,6 +23,8 @@ class Command(BaseCommand):
                         'venue': row['venue'],
                         'date': date_obj,
                         'capacity': row['capacity'],
+                        'category': category,
+                        'poster' : row['poster'],
                     }
                 )
         self.stdout.write(self.style.SUCCESS('Events imported!'))

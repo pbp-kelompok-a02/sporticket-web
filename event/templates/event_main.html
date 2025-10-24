@@ -2,56 +2,270 @@
 {% load static %}
 
 {% block content %}
-<!-- <header class="relative h-96 flex items-center justify-center">
-
-  <img
-    src="https://www.si.com/.image/c_fill,w_1440,ar_16:9,f_auto,q_auto,g_auto/MTY4MDA2OTUxNjM3NzU1MjY0/sports-tickets-lead1_0jpg.jpg"
-    alt="Header Background"
-    class="absolute inset-0 w-full h-full object-cover"
-  />
-
-
-  <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
-
-
-  <div class="relative text-center text-white">
-    <p>Welcome to</p>
-    <h1 class="text-4xl md:text-6xl font-bold mb-4">Sporticket</h1>
-    <p class="text-lg md:text-xl">Get the latest matches ticket here!</p>
-  </div>
-</header> -->
-
 <br />
 <div class="min-h-screen w-full bg-gray-50 pt-2">
   <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
     <!-- filters -->
     <div class="mb-6 flex justify-between space-x-8 border-b border-gray-200">
       <div class="flex space-x-8">
-        <!-- All Events Button -->
-        <a href="?" class="{% if not filter_category or filter_category == 'all' %}border-blue-500 text-blue-600{% endif %} border-b-2 border-transparent px-1 pb-2 font-medium text-gray-700 transition hover:border-blue-500 hover:text-blue-600"> All Events </a>
-
-        <!-- Category Filters -->
-        {% for category in categories %}
-        <a href="?category={{ category }}" class="{% if filter_category == category %}border-blue-500 text-blue-600{% endif %} border-b-2 border-transparent px-1 pb-2 font-medium text-gray-700 transition hover:border-blue-500 hover:text-blue-600"> {{ category }} </a>
-        {% endfor %}
+        <a href="#" id="filter-all">All Events</a>
+        <a href="#" id="filter-badminton">Badminton</a>
+        <a href="#" id="filter-basketball">Basketball</a>
+        <a href="#" id="filter-football">Football</a>
+        <a href="#" id="filter-tennis">Tennis</a>
+        <a href="#" id="filter-volleyball">Volleyball</a>
       </div>
     </div>
 
-    <!-- News Grid -->
-    {% if not event_list %}
-    <div class="rounded-lg border border-gray-200 bg-white p-12 text-center">
-      <h3 class="mb-2 text-lg font-medium text-gray-900">No events were found!</h3>
-      <a href="{% url 'event:add_event' %}" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"> Add Event </a>
+    <!-- Loading State -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <p>Loading events...</p>
     </div>
-    {% else %}
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">{% for event in event_list %} {% include 'event_card.html' with event=event %} {% endfor %}</div>
-    {% endif %}
+
+    <!-- Error State -->
+    <div id="error" class="hidden rounded-lg border border-red-200 bg-red-50 p-12 text-center">
+      <h3 class="mb-2 text-lg font-medium text-red-900">Error loading events</h3>
+      <p class="text-red-700" id="error-message">Please try again later.</p>
+    </div>
+
+    <!-- Events Grid -->
+    <div id="events-grid" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Events will be loaded here via AJAX -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty" class="hidden rounded-lg border border-gray-200 bg-white p-12 text-center">
+      <h3 class="mb-2 text-lg font-medium text-gray-900">No events were found!</h3>
+      <a href="{% url 'event:add_event' %}" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">Add Event</a>
+    </div>
   </div>
 </div>
 
 <script>
+// Config - with fallback
+let EVENT_API_ENDPOINT = "{% url 'event:show_json' %}";
 
+// Fallback if URL doesn't render correctly
+if (!EVENT_API_ENDPOINT || EVENT_API_ENDPOINT.includes('{%')) {
+    EVENT_API_ENDPOINT = "/events/json/";
+    console.warn('Using fallback URL for API endpoint');
+}
+
+console.log('API Endpoint configured as:', EVENT_API_ENDPOINT);
+
+// DOM Elements
+const loadingMessage = document.getElementById("loading");
+const errorMessage = document.getElementById("error");
+const errorMessageText = document.getElementById("error-message");
+const emptyDisplay = document.getElementById("empty");
+const gridContainer = document.getElementById("events-grid");
+
+const filterButtons = {
+    'all': document.getElementById("filter-all"),
+    'badminton': document.getElementById("filter-badminton"),
+    'basketball': document.getElementById("filter-basketball"),
+    'football': document.getElementById("filter-football"),
+    'tennis': document.getElementById("filter-tennis"),
+    'volleyball': document.getElementById("filter-volleyball")
+};
+
+// State variable
+let activeFilter = 'all';
+let allEventData = [];
+
+// Sport icon mapping
+const categoryIcons = {
+    'badminton': '{% static "images/badminton-logo.png" %}',
+    'basketball': '{% static "images/basketball-logo.png" %}',
+    'football': '{% static "images/football-logo.png" %}',
+    'tennis': '{% static "images/tennis-logo.png" %}',
+    'volleyball': '{% static "images/volley-logo.png" %}'
+};
+
+// Display page sections
+function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false, errorText = '' }) {
+    loadingMessage.classList.toggle('hidden', !showLoading);
+    errorMessage.classList.toggle('hidden', !showError);
+    emptyDisplay.classList.toggle('hidden', !showEmpty);
+    gridContainer.classList.toggle('hidden', !showGrid);
+
+    if (showError && errorText) {
+        errorMessageText.textContent = errorText;
+    }
+}
+
+// Update filter appearance
+function updateFilterButtonAppearance() {
+    Object.values(filterButtons).forEach(button => {
+        if (button) {
+            button.className = 'border-b-2 border-transparent px-1 pb-2 font-medium text-gray-700 transition hover:border-blue-500 hover:text-blue-600';
+        }
+    });
+
+    const activeButton = filterButtons[activeFilter];
+    if (activeButton) {
+        activeButton.className = 'border-blue-500 text-blue-600 border-b-2 px-1 pb-2 font-medium transition hover:border-blue-500 hover:text-blue-600';
+    }
+}
+
+// Create event card element
+function buildEventCardElement(eventItem) {
+    const articleElement = document.createElement('article');
+    articleElement.className = 'event-card overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow duration-300 hover:shadow-lg';
+    articleElement.dataset.category = eventItem.category;
+
+    const detailUrl = `{% url 'event:event_detail' '00' %}`.replace('00', eventItem.match_id);
+    const sportIcon = categoryIcons[eventItem.category] || categoryIcons.football;
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'Date TBD';
+        try {
+            const date = new Date(dateString);
+            return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+        } catch (e) {
+            return dateString;
+        }
+    };
+
+    const posterHtml = eventItem.poster ?
+        `<img src="${eventItem.poster}" alt="${eventItem.name}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200\'></div>'">` :
+        `<div class="w-full h-full bg-gray-200"></div>`;
+
+    articleElement.innerHTML = `
+        <div class="relative aspect-[16/9] overflow-hidden">
+            ${posterHtml}
+            <div class="absolute top-3 right-3 flex space-x-2 bg-white rounded-md p-2 shadow-lg">
+                <img src="${sportIcon}" alt="${eventItem.category}" class="w-6 h-6" onerror="this.style.display='none'">
+            </div>
+        </div>
+        <div class="p-5">
+            <h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900">
+                <a href="${detailUrl}" class="transition-colors hover:text-blue-600">${eventItem.name}</a>
+            </h3>
+            <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">${eventItem.venue || 'Venue TBD'}</h2>
+            <div class="flex items-center space-x-2 text-gray-700">
+                <img src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/all-icons/calendar-hxx1j6ge7nbk1xlqmfl5w9.png/calendar-xoaigr9z259n0zw0pl1c.png" class="w-5 h-5">
+                <span class="text-sm font-medium">${formatDate(eventItem.date)}</span>
+            </div>
+            <br>
+            <button onclick="location.href='${detailUrl}'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                Check Detail
+            </button>
+        </div>
+    `;
+
+    return articleElement;
+}
+
+// Load events via AJAX
+async function loadEvents(category = 'all') {
+    try {
+        displayPageSection({ showLoading: true });
+
+        const url = category === 'all' ? EVENT_API_ENDPOINT : `${EVENT_API_ENDPOINT}?category=${category}`;
+
+        console.log('Fetching events from:', url);
+
+        const response = await fetch(url);
+
+        console.log('Response status:', response.status, response.statusText);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response body:', errorText);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.error('Invalid content type:', contentType);
+            throw new Error('Server returned non-JSON response');
+        }
+
+        const events = await response.json();
+
+        console.log('Successfully loaded events:', events.length);
+
+        allEventData = events;
+        renderEvents(events, category);
+
+    } catch (error) {
+        console.error('Error loading events:', error);
+        displayPageSection({
+            showError: true,
+            errorText: `Failed to load events: ${error.message}`
+        });
+    }
+}
+
+// Render events to the grid
+function renderEvents(events, category = 'all') {
+    gridContainer.innerHTML = '';
+
+    if (events.length === 0) {
+        displayPageSection({ showEmpty: true });
+        return;
+    }
+
+    const filteredEvents = category === 'all' ? events : events.filter(event => event.category === category);
+
+    if (filteredEvents.length === 0) {
+        displayPageSection({ showEmpty: true });
+        return;
+    }
+
+    filteredEvents.forEach(event => {
+        const cardElement = buildEventCardElement(event);
+        gridContainer.appendChild(cardElement);
+    });
+
+    displayPageSection({ showGrid: true });
+}
+
+// Filter events function
+function filterEvents() {
+    if (allEventData.length === 0) {
+        loadEvents(activeFilter);
+        return;
+    }
+
+    renderEvents(allEventData, activeFilter);
+    const newUrl = activeFilter === 'all' ? '?' : `?category=${activeFilter}`;
+    history.replaceState({}, '', newUrl);
+}
+
+// Add event listeners
+function setupFilterEventListeners() {
+    Object.entries(filterButtons).forEach(([category, button]) => {
+        if (button) {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                activeFilter = category;
+                updateFilterButtonAppearance();
+                filterEvents();
+            });
+        }
+    });
+}
+
+// Initialize from URL
+function initializeFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCategory = urlParams.get('category');
+
+    if (urlCategory && filterButtons[urlCategory]) {
+        activeFilter = urlCategory;
+    }
+
+    updateFilterButtonAppearance();
+    loadEvents(activeFilter);
+}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing...');
+    setupFilterEventListeners();
+    initializeFromURL();
+});
 </script>
-
-
 {% endblock content %}

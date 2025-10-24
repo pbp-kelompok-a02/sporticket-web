@@ -11,15 +11,15 @@
     <!-- Status Badges -->
     <div class="absolute top-3 right-3 flex space-x-2 bg-white rounded-md p-2 shadow-lg">
       {% if event.category == "badminton" %}
-        <img src="{% static 'images/badminton-logo.svg' %}" alt="Badminton" class="w-6 h-6">
-      {% elif object.category == "tennis" %}
-        <img src="{% static 'images/tennis-logo.svg' %}" alt="Tennis" class="w-6 h-6">
-      {% elif object.category == "basketball" %}
-        <img src="{% static 'images/basketball-logo.svg' %}" alt="Basketball" class="w-6 h-6">
+        <img src="{% static 'images/badminton-logo.png' %}" alt="Badminton" class="w-6 h-6">
+      {% elif event.category == "tennis" %}
+        <img src="{% static 'images/tennis-logo.png' %}" alt="Tennis" class="w-6 h-6">
+      {% elif event.category == "basketball" %}
+        <img src="{% static 'images/basketball-logo.png' %}" alt="Basketball" class="w-6 h-6">
       {% elif event.category == "volleyball" %}
-        <img src="{% static 'images/volleyball-logo.svg' %}" alt="Volleyball" class="w-6 h-6">
+        <img src="{% static 'images/volley-logo.png' %}" alt="Volleyball" class="w-6 h-6">
       {% else %}
-        <img src="{% static 'images/football-logo.svg' %}" alt="Football" class="w-6 h-6">
+        <img src="{% static 'images/football-logo.png' %}" alt="Football" class="w-6 h-6">
       {% endif %}
     </div>
   </div>
@@ -27,7 +27,7 @@
   <!-- Content -->
   <div class="p-5">
     <h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900">
-      <a href="{% url 'event:event_detail' event.id %}" class="transition-colors hover:text-blue-600"> {{ event }} </a>
+      <a href="{% url 'event:event_detail' event.match_id %}" class="transition-colors hover:text-blue-600"> {{ event }} </a>
     </h3>
     <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">{{ event.venue }}</h2>
 
@@ -38,7 +38,7 @@
 
     <br>
 
-    <button href="{% url 'event:event_detail' event.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+    <button href="{% url 'event:event_detail' event.match_id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
       Check Detail
     </button>
 
