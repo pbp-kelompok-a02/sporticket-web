@@ -6,12 +6,12 @@ import event
 from event.models import Event
 from event.forms import EventForm
 
-# Create your views here.
 def show_event_main(request):
     event_list = Event.objects.all()
 
-    categories = Event.objects.values_list('category', flat=True).distinct()
-    filter_category = request.GET.get('category')
+    raw_categories = Event.objects.values_list('category', flat=True)
+    categories = sorted(set(raw_categories))
+    filter_category = request.GET.get('category', '').lower()
     if filter_category and filter_category != 'all':
         event_list = event_list.filter(category=filter_category)
 
