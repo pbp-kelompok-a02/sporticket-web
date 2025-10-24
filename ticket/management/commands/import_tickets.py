@@ -46,8 +46,8 @@ class Command(BaseCommand):
                         event=event,
                         category=category,
                         defaults={
-                            'price': row['ticket_price'],
-                            'stock': row['ticket_stock'],
+                            'price': int(row['ticket_price']),
+                            'stock': int(row['ticket_stock']),
                         }
                     )
                     total_imported += 1
