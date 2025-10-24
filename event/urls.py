@@ -10,7 +10,7 @@ def index(request):
 app_name = 'event'
 
 urlpatterns = [
-	path('events/', show_event_main, name='show_event_main'),
+	path('', show_event_main, name='show_event_main'),
 	path('events/<str:id>/', event_detail, name='event_detail'),
 	path('events/add/', add_event, name='add_event'),
 	path('events/<str:id>/edit/', edit_event, name='edit_event'),
