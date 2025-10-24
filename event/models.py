@@ -11,8 +11,8 @@ class Event(models.Model):
 		('tennis', 'Tennis'),
 		('volleyball', 'Volleyball'),
 	]
+	match_id = models.CharField(max_length=100, unique=True, default='')
 	name = models.CharField(max_length=255)
-	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	home_team = models.CharField(max_length=255)
 	away_team = models.CharField(max_length=255)
 	description = models.TextField(blank=True)
