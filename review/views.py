@@ -9,7 +9,7 @@ from event.models import Event
 from order.models import Order
 
 # Create your views here.
-@login_required
+@login_required(login_url='accounts/login')
 @require_POST
 def add_review(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -29,7 +29,7 @@ def add_review(request, event_id):
     html = render_to_string('review/card_review.html', {'review': review}, request=request)
     return JsonResponse({'success': True, 'html': html, 'created': created})
 
-@login_required
+@login_required(login_url='accounts/login')
 @require_POST
 def edit_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
@@ -44,7 +44,7 @@ def edit_review(request, review_id):
     html = render_to_string('review/card_review.html', {'review': review}, request=request)
     return JsonResponse({'success': True, 'html': html, 'review_id': review.id})
 
-@login_required
+@login_required(login_url='accounts/login')
 @require_POST
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id, user=request.user)
@@ -75,9 +75,19 @@ def show_reviews(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     reviews = event.reviews.order_by('created_at')
 
+    user_has_ticket = False
+    user_has_review = False
+    if request.user.is_authenticated:
+        user_has_ticket = Order.objects.filter(
+            user=request.user,
+            ticket__event=event, 
+            status='confirmed'
+        ).exists()
+        
     context = {
         'event': event,
-        'reviews': reviews
+        'reviews': reviews,
+        'user_has_ticket': user_has_ticket,
     }
     print(">>> event", event)
     print(">>> reviews count", reviews.count())

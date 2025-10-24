@@ -1,21 +1,40 @@
 <div class="bg-white shadow rounded-lg p-4 mb-3 border border-gray-100 font-[Kanit]" id="review-{{ review.id }}">
-  <div class="flex justify-between items-center mb-1">
-    <p class="font-semibold text-gray-800">{{ review.user.username }}</p>
-    <span class="text-yellow-500">⭐ {{ review.rating }}/5</span>
-  </div>
-  <p class="text-gray-700">{{ review.komentar }}</p>
-  <p class="text-sm text-gray-400">{{ review.created_at|date:"d M Y, H:i" }}</p>
+    
+    <div class="flex items-start space-x-3 mb-3">
+        <div class="flex-shrink-0">
+            <div class="flex items-center justify-center h-10 w-10 rounded-full bg-[#537FB9] text-white font-bold">
+                {{ review.user.username|first|upper }}
+            </div>
+        </div>
+        
+        <div class="flex-grow">
+            <p class="font-semibold text-gray-800">{{ review.user.username }}</p>
+            <div class="flex items-center space-x-2 text-sm text-gray-500">
+                <div class="flex text-yellow-500">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}
+                            <span>★</span>
+                        {% else %}
+                            <span class="text-gray-300">★</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-gray-400">·</span>
+                <p class="text-sm text-gray-400">{{ review.created_at|date:"d M Y" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <p class="text-gray-700">{{ review.komentar }}</p>
 
-  {% if user == review.user %}
-  <div class="flex gap-3 mt-2">
-    <button class="text-[#537FB9] text-sm hover:underline"
-            onclick="openEditModal('{{ review.id }}', '{{ review.rating }}', `{{ review.komentar|escapejs }}`)">
-      Edit
-    </button>
-    <button class="text-red-500 text-sm hover:underline"
-            onclick="deleteReview('{{ review.id }}')">
-      Delete
-    </button>
-  </div>
-  {% endif %}
+    {% if user == review.user %}
+    <div class="flex gap-2">
+      <button onclick="openEditModal(this)"
+              data-review-id="{{ review.id }}"
+              data-review-rating="{{ review.rating }}"
+              data-review-komentar="{{ review.komentar|escapejs }}"
+              class="px-2 py-1 bg-gray-100 rounded text-sm">Edit</button>
+      <button onclick="deleteReview('{{ review.id }}')" class="px-2 py-1 bg-red-100 rounded text-sm">Delete</button>
+    </div>
+    {% endif %}
 </div>

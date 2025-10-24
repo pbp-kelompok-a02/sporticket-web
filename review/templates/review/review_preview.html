@@ -7,23 +7,18 @@
   <div class="mb-4">
       <button onclick="openAddModal('{{ event.id }}')"
               class="w-full px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]">
-          {% if user_has_review %}
-              Edit Your Review
-          {% else %}
               Add Your Review
-          {% endif %}
       </button>
   </div>
   {% endif %}
 
-    <div id="review-container" class="space-y-4">
+    <div id="review-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
     {% for review in reviews %}
-            {% include 'review/card_review.html' with review=review user=request.user %}
+      {% include 'review/card_review.html' with review=review user=request.user %}
     {% empty %}
       <p class="text-gray-500 font-[Kanit]">Belum ada review untuk event ini.</p>
     {% endfor %}
   </div>
-
 
   <div class="flex justify-center mt-6">
     <a href="{% url 'review:list' event.id %}"
