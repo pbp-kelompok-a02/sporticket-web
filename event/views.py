@@ -10,8 +10,9 @@ from event.forms import EventForm
 def show_event_main(request):
     event_list = Event.objects.all()
 
-    categories = Event.objects.values_list('category', flat=True).distinct()
-    filter_category = request.GET.get('category')
+    raw_categories = Event.objects.values_list('category', flat=True)
+    categories = sorted(set(raw_categories))
+    filter_category = request.GET.get('category', '').lower()
     if filter_category and filter_category != 'all':
         event_list = event_list.filter(category=filter_category)
 
@@ -34,8 +35,8 @@ def add_event(request):
     context = {'form': form}
     return render(request, 'add_event.html', context)
 
-def event_detail(request, id):
-    event = get_object_or_404(Event, pk=id)
+def event_detail(request, match_id):
+    event = get_object_or_404(Event, match_id=match_id)
     context = {'event': event}
 
     return render(request, 'event_detail.html', context)
@@ -81,21 +82,21 @@ def add_event_ajax(request):
 
     return HttpResponse(b"CREATED", status=201)
 
+
 def show_json(request):
     event_list = Event.objects.all()
     data = [
         {
-            'id': str(event.id),
+            'match_id': str(event.match_id),
             'name': event.name,
             'home_team': event.home_team,
             'away_team': event.away_team,
             'description': event.description,
-            'poster': event.poster,
+            'poster': event.poster.url if event.poster else None,  # Fixed: get URL
             'venue': event.venue,
-            'date': event.date,
+            'date': event.date.isoformat() if event.date else None,  # Convert datetime to string
             'capacity': event.capacity,
             'category': event.category,
-
         }
         for event in event_list
     ]
