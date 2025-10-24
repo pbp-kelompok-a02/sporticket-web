@@ -91,9 +91,9 @@ def show_json(request):
             'home_team': event.home_team,
             'away_team': event.away_team,
             'description': event.description,
-            'poster': event.poster.url if event.poster else None,  # Fixed: get URL
+            'poster': event.poster if event.poster else None,
             'venue': event.venue,
-            'date': event.date.isoformat() if event.date else None,  # Convert datetime to string
+            'date': event.date.isoformat() if event.date else None,
             'capacity': event.capacity,
             'category': event.category,
         }

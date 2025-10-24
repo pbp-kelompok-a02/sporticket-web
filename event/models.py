@@ -16,7 +16,7 @@ class Event(models.Model):
 	home_team = models.CharField(max_length=255)
 	away_team = models.CharField(max_length=255)
 	description = models.TextField(blank=True)
-	poster = models.ImageField(upload_to='events/posters/', blank=True, null=True)
+	poster = models.URLField(blank=True, null=True)
 	venue = models.CharField(max_length=255)
 	date = models.DateTimeField()
 	capacity = models.PositiveIntegerField(default=0)
