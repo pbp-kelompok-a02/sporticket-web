@@ -1,8 +1,18 @@
+import uuid
+
 from django.db import models
 
 
 class Event(models.Model):
+	CATEGORY = [
+		('badminton', 'Badminton'),
+		('football', 'Football'),
+		('basketball', 'Basketball'),
+		('tennis', 'Tennis'),
+		('volleyball', 'Volleyball'),
+	]
 	name = models.CharField(max_length=255)
+	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 	home_team = models.CharField(max_length=255)
 	away_team = models.CharField(max_length=255)
 	description = models.TextField(blank=True)
@@ -10,6 +20,7 @@ class Event(models.Model):
 	venue = models.CharField(max_length=255)
 	date = models.DateTimeField()
 	capacity = models.PositiveIntegerField(default=0)
+	category = models.CharField(max_length=20, choices=CATEGORY, default='football')
 
 	class Meta:
 		ordering = ['-date', 'name']
