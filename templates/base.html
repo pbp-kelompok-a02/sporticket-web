@@ -10,7 +10,7 @@
     <title>{% block title %}{{ app_title }}{% endblock %}</title>
   </head>
   <body>
-    {% if not request.path == '/login/' and not request.path == '/register/' %}
+    {% if not request.path == 'account/login/' and not request.path == 'account/register/' %}
       {% include 'navbar.html' %}
     {% endif %}
 

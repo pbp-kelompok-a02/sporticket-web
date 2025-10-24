@@ -86,13 +86,13 @@ def login_view(request):
                 response = JsonResponse({
                     'success': True, 
                     'message': 'Login successful!',
-                    'redirect_url': reverse('event:index')
+                    'redirect_url': reverse('event:show_event_main')
                 })
                 response.set_cookie('last_login', str(datetime.datetime.now()))
                 return response
             else:
                 # submission form normal
-                response = HttpResponseRedirect(reverse('event:index'))
+                response = HttpResponseRedirect(reverse('event:show_event_main'))
                 response.set_cookie('last_login', str(datetime.datetime.now()))
                 return response
         else:
@@ -113,7 +113,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    response = HttpResponseRedirect(reverse('event:index'))
+    response = HttpResponseRedirect(reverse('event:show_event_main'))
     response.delete_cookie('last_login')
     return response
 
@@ -245,7 +245,7 @@ def delete_account(request):
         request.session.flush()
         logout(request)
         messages.success(request, 'Account deleted successfully.')
-        return redirect('event:index')
+        return redirect('event:show_event_main')
     except Exception as e:
         messages.error(request, f'Failed to delete account: {e}')
         return redirect('account:profile')

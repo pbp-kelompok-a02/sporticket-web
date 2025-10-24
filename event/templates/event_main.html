@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- <header class="relative h-96 flex items-center justify-center">
+
+  <img
+    src="https://www.si.com/.image/c_fill,w_1440,ar_16:9,f_auto,q_auto,g_auto/MTY4MDA2OTUxNjM3NzU1MjY0/sports-tickets-lead1_0jpg.jpg"
+    alt="Header Background"
+    class="absolute inset-0 w-full h-full object-cover"
+  />
+
+
+  <div class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
+
+
+  <div class="relative text-center text-white">
+    <p>Welcome to</p>
+    <h1 class="text-4xl md:text-6xl font-bold mb-4">Sporticket</h1>
+    <p class="text-lg md:text-xl">Get the latest matches ticket here!</p>
+  </div>
+</header> -->
+
+<br />
+<div class="min-h-screen w-full bg-gray-50 pt-2">
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <!-- filters -->
+    <div class="mb-6 flex justify-between space-x-8 border-b border-gray-200">
+      <div class="flex space-x-8">
+        <!-- All Events Button -->
+        <a href="?" class="{% if not filter_category or filter_category == 'all' %}border-blue-500 text-blue-600{% endif %} border-b-2 border-transparent px-1 pb-2 font-medium text-gray-700 transition hover:border-blue-500 hover:text-blue-600"> All Events </a>
+
+        <!-- Category Filters -->
+        {% for category in categories %}
+        <a href="?category={{ category }}" class="{% if filter_category == category %}border-blue-500 text-blue-600{% endif %} border-b-2 border-transparent px-1 pb-2 font-medium text-gray-700 transition hover:border-blue-500 hover:text-blue-600"> {{ category }} </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- News Grid -->
+    {% if not event_list %}
+    <div class="rounded-lg border border-gray-200 bg-white p-12 text-center">
+      <h3 class="mb-2 text-lg font-medium text-gray-900">No events were found!</h3>
+      <a href="{% url 'event:add_event' %}" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"> Add Event </a>
+    </div>
+    {% else %}
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">{% for event in event_list %} {% include 'event_card.html' with event=event %} {% endfor %}</div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+
+</script>
+
+
+{% endblock content %}

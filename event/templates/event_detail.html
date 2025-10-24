@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen w-full bg-gray-50">
+  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Back Navigation -->
+    <div class="mb-6">
+      <a href="{% url 'event:show_event_main' %}" class="font-medium text-gray-600 transition-colors hover:text-gray-900"> ← Back to Event List </a>
+    </div>
+
+    <!-- Article -->
+    <article class="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      <!-- Header -->
+      <div class="p-6 sm:p-8">
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <span class="text-s inline-flex items-center space-x-2 rounded-md bg-blue-600 px-3 py-1 font-medium text-white">
+            {% if event.category == "badminton" %}
+            <img src="{% static 'images/badminton-logo.png' %}" alt="Badminton" class="h-3 w-3" />
+            <p>Badminton</p>
+            {% elif object.category == "tennis" %}
+            <img src="{% static 'images/tennis-logo.png' %}" alt="Tennis" class="h-3 w-3" />
+            <p>Tennis</p>
+            {% elif object.category == "basketball" %}
+            <img src="{% static 'images/basketball-logo.png' %}" alt="Basketball" class="h-3 w-3" />
+            <p>Basketball</p>
+            {% elif event.category == "volleyball" %}
+            <img src="{% static 'images/volleyball-logo.png' %}" alt="Volleyball" class="h-3 w-3" />
+            <p>Volleyball</p>
+            {% else %}
+            <img src="{% static 'images/football-logo.png' %}" alt="Football" class="h-3 w-3" />
+            <p>Football</p>
+            {% endif %}
+          </span>
+        </div>
+
+        <h1 class="mb-4 text-3xl leading-tight font-bold text-gray-900 sm:text-4xl">{{ event }}</h1>
+        {% if event.poster %}
+        <img src="{{ event.poster }}" alt="{{ event.name }}" class="h-full w-full object-cover" />
+        {% else %}
+        <div class="h-full w-full bg-gray-200"></div>
+        {% endif %}
+      </div>
+
+      <!-- Content -->
+      <div class="p-6 sm:p-8">
+        <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">{{ event.venue }} - Capacity: {{ event.capacity }}</h2>
+        <div class="flex items-center space-x-2 text-gray-700">
+          <img src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/all-icons/calendar-hxx1j6ge7nbk1xlqmfl5w9.png/calendar-xoaigr9z259n0zw0pl1c.png" class="h-5 w-5" />
+          <span class="text-sm font-medium">{{ event.date }}</span>
+        </div>
+        <br />
+        <div class="prose prose-lg max-w-none">
+          <div class="text-base leading-relaxed whitespace-pre-line text-gray-700 sm:text-lg">{{ event.description }}</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
+
+
+
+
+
+{% endblock content %}
