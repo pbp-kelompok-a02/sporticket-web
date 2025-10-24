@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -9,26 +10,30 @@
       margin: 0; padding: 0;
       background: #f9f9f9;
     }
-    .container {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .form-section {
-      flex: 1;
-      margin-right: 20px;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
+      .container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;   /* center both sections together */
+    align-items: center;       /* vertically center them */
+    gap: 60px;                 /* spacing between form and image */
+    max-width: 900px;          /* narrower container to keep things tight */
+    margin: 60px auto;         /* center on page */
+    padding: 20px 40px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .form-section {
+  flex: 1;
+  max-width: 350px;    /* smaller, so it doesn’t stretch */
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f3f3f3;
+}
     .form-section h2 {
       margin-top: 0;
+      text-align: center;
     }
     .form-group {
       margin-bottom: 16px;
@@ -58,6 +63,7 @@
       color: white;
       font-size: 16px;
       cursor: pointer;
+      margin-right: 8px;
     }
     .btn:disabled {
       background: #aaa;
@@ -72,42 +78,47 @@
     }
     .success { background: #d1fae5; color: #065f46; }
     .error { background: #fee2e2; color: #991b1b; }
+
     .stadium {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .stadium img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.stadium img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Form -->
+
+    <!-- Form kiri -->
     <div class="form-section">
       <h2>{{ ticket.event.name }}</h2>
 
-    {% if error_message %}
-      <div class="notification error">{{ error_message }}</div>
-    {% endif %}
+      {% if error_message %}
+        <div class="notification error">{{ error_message }}</div>
+      {% endif %}
 
       <form id="order-form" method="post" action="">
         {% csrf_token %}
 
         <div class="form-group">
           <label for="id_quantity">Ticket amount:</label>
-          <input type="number" id="id_quantity" name="quantity" min="1" required>
+          <input type="number" id="id_quantity" name="quantity" min="1"
+                 value="{% if order %}{{ order.quantity }}{% endif %}" required>
         </div>
 
         <div class="form-group">
           <label for="id_ticket">Seating Location:</label>
           <select id="id_ticket" name="ticket_id" required>
             {% for t in ticket.event.tickets.all %}
-              <option value="{{ t.id }}">
+              <option value="{{ t.id }}"
+                {% if order and t.id == order.ticket.id %}selected{% endif %}>
                 {{ t.get_category_display }} — Rp {{ t.price }} (Tersisa: {{ t.stock }})
               </option>
             {% endfor %}
@@ -126,6 +137,10 @@
       <div id="notification" class="notification"></div>
     </div>
 
+    <!-- Gambar kanan -->
+    <!-- <div class="stadium">
+      <img src="{% static 'order/images/oldTrafford.png' %}" alt="Stadium Map">
+    </div> -->
 
   </div>
 
@@ -135,7 +150,7 @@
 
     form.addEventListener('submit', function(event) {
       const qty = parseInt(document.getElementById('id_quantity').value);
-      const select = document.getElementById('id_category');
+      const select = document.getElementById('id_ticket');
       const selectedOption = select.options[select.selectedIndex];
       const stockText = selectedOption.textContent.match(/Tersisa: (\d+)/);
       const stock = stockText ? parseInt(stockText[1]) : 0;
