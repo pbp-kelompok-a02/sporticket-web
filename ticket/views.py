@@ -69,7 +69,7 @@ def show_json(request):
     data = [
         {
             'id': ticket.id,
-            'event': ticket.event if ticket.event else None,
+            'event_id': ticket.event.match_id if ticket.event else None,
             'category': ticket.event.category if ticket.event else None,
             'price': float(ticket.price),
             'stock': ticket.stock,
@@ -90,7 +90,7 @@ def delete_ticket_ajax(request, id):
 def add_ticket_ajax(request):
     if request.method == 'POST':
         data = json.loads(request.body)
-        event = Event.objects.get(id=data['event_id'])
+        event = Event.objects.get(match_id=data['event_id'])
         ticket = Ticket.objects.create(
             event=event,
             category=data['category'],
@@ -99,7 +99,7 @@ def add_ticket_ajax(request):
         )
         return JsonResponse({
             'id': ticket.id,
-            'event_name': ticket.event.name,
+            'event': ticket.event.match_id,
             'category': ticket.category,
             'price': float(ticket.price),
             'stock': ticket.stock

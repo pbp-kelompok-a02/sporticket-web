@@ -10,7 +10,7 @@
     <title>{% block title %}{{ app_title }}{% endblock %}</title>
   </head>
   <body>
-    {% if not request.path == '/login/' and not request.path == '/register/' %}
+    {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
       {% include 'navbar.html' %}
     {% endif %}
 
@@ -21,7 +21,7 @@
     </div>
 
     {% include 'toast.html' %}
-    {% if not request.path == 'account/login/' and not request.path == 'account/register/' %}
+    {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
       {% include 'modal.html' %}
     {% endif %}
 

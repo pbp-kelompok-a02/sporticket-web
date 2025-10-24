@@ -25,7 +25,7 @@
           <select id="event" name="event" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" required>
             <option value="">Choose an event</option>
             {% for event in event_list %}
-              <option value="{{ event.id }}">{{ event.name }}</option>
+              <option value="{{ event.match_id }}">{{ event.name }}</option>
             {% endfor %}
           </select>
         </div>

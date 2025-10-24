@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth import (
     login, logout, get_user_model, update_session_auth_hash
 )
@@ -19,6 +19,8 @@ def get_user_role(user):
     return 'Buyer'
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect('event:show_event_main')
     if request.method == 'POST':
         form = RegistrationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -66,6 +68,8 @@ def register(request):
     return render(request, 'account/register.html', context)
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('event:show_event_main')
     if request.method == 'POST':
         form = EmailAuthenticationForm(request, data=request.POST)        
         if form.is_valid():
@@ -86,13 +90,13 @@ def login_view(request):
                 response = JsonResponse({
                     'success': True, 
                     'message': 'Login successful!',
-                    'redirect_url': reverse('event:index')
+                    'redirect_url': reverse('event:show_event_main')
                 })
                 response.set_cookie('last_login', str(datetime.datetime.now()))
                 return response
             else:
                 # submission form normal
-                response = HttpResponseRedirect(reverse('event:index'))
+                response = HttpResponseRedirect(reverse('event:show_event_main'))
                 response.set_cookie('last_login', str(datetime.datetime.now()))
                 return response
         else:
@@ -113,7 +117,7 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    response = HttpResponseRedirect(reverse('event:index'))
+    response = HttpResponseRedirect(reverse('event:show_event_main'))
     response.delete_cookie('last_login')
     return response
 
@@ -122,7 +126,7 @@ def profile_view(request, user_id=None):
         target_user = get_object_or_404(User, pk=user_id)
     else:
         if not request.user.is_authenticated:
-            return HttpResponseForbidden('Login required to view your profile.')
+            return redirect('account:login')
         target_user = request.user
 
     viewer = request.user if request.user.is_authenticated else None
@@ -245,7 +249,7 @@ def delete_account(request):
         request.session.flush()
         logout(request)
         messages.success(request, 'Account deleted successfully.')
-        return redirect('event:index')
+        return redirect('event:show_event_main')
     except Exception as e:
         messages.error(request, f'Failed to delete account: {e}')
         return redirect('account:profile')

@@ -68,6 +68,9 @@ Dataset akan disimpan di csv file.
 Dataset-dataset ini untuk:
     Data pertandingan olahraga
     Data kursi tiket setiap pertandingannya 
+    Data event
+
+https://www.kaggle.com/datasets/nilnomics/opening-day-ticket-prices/data
 
 Sepak bola 
 https://www.premierleague.com/en/matches?competition=8&season=2025&matchweek=7&month=10
@@ -101,3 +104,7 @@ https://seatgeek.com/the-garden-cup-tickets/tennis/2025-12-08-7-pm/17721058?quan
 **Tautan PWS** = https://laudya-michelle-sporticket.pbp.cs.ui.ac.id/
 
 **Tautan design** = https://www.figma.com/design/rYfw6PmdiLXbLFPPriPFEe/Design-Web-Sporticket?node-id=0-1&t=lOHvODza4QLRYjHE-1
+
+**CREDENTIALS ADMIN (SUPERUSER)**
+Username (email): admin@sporticket.com
+Password: adminsporticket2025

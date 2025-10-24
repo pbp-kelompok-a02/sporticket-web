@@ -125,12 +125,12 @@ const csrfToken = '{{ csrf_token }}';
 document.getElementById("submitNews").addEventListener("click", async function(e) {
   e.preventDefault();
 
-  const eventId = document.getElementById('event').value;
+  const eventId = document.getElementById("event").value;
   const category = document.getElementById("category").value;
   const price = document.getElementById("price").value;
   const stock = document.getElementById("stock").value;
 
-  if (!category || !price || !stock || !eventId) return alert("Please fill all fields");
+  if (!category || !price || !stock ) return alert("Please fill all fields");
 
   const response = await fetch("{% url 'ticket:add_ticket_ajax' %}", {
     method: "POST",
