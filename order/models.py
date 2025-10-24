@@ -17,6 +17,7 @@ class Order(models.Model):
 	ticket = models.ForeignKey('ticket.Ticket', on_delete=models.PROTECT, related_name='orders')
 	quantity = models.PositiveIntegerField(default=1)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+	harga = models.DecimalField(max_digits=10, decimal_places=2, null=False, default=0)
 
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
