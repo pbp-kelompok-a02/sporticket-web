@@ -87,7 +87,6 @@ def create_order(request, ticket_id, order_id=None):
         # setelah berhasil → langsung ke history
         return redirect("order:history")
     
-    print("POST DATA:", request.POST)
     return render(request, "order/create_order.html", {"ticket": ticket, "order": order})
 
 
@@ -111,11 +110,5 @@ def order_history(request):
 
 # Testing
 # def order_history(request):
-#     if request.user.is_authenticated:
-#         # kalau login → tampilkan pesanan user
-#         orders = Order.objects.filter(user=request.user).select_related("ticket", "ticket__event")
-#     else:
-#         # kalau belum login → kosongkan / semua order
-#         orders = Order.objects.none()  # atau Order.objects.all() kalau mau semua order tampil
-
+#     orders = Order.objects.all().select_related("ticket", "ticket__event")
 #     return render(request, "order/history.html", {"orders": orders})

@@ -6,7 +6,6 @@ import event
 from event.models import Event
 from event.forms import EventForm
 
-# Create your views here.
 def show_event_main(request):
     event_list = Event.objects.all()
 
