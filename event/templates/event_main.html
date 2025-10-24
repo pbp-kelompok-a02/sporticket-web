@@ -171,8 +171,7 @@ const errorMessage = document.getElementById("error");
 const errorMessageText = document.getElementById("error-message");
 const emptyDisplay = document.getElementById("empty");
 const gridContainer = document.getElementById("events-grid");
-const container = document.getElementById("events-container");
-const isAdmin = container.getAttribute('data-is-admin') === 'true';
+
 
 const filterButtons = {
     'all': document.getElementById("filter-all"),
@@ -247,7 +246,9 @@ function buildEventCardElement(eventItem) {
         `<img src="${eventItem.poster}" alt="${eventItem.name}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200\'></div>'">` :
         `<div class="w-full h-full bg-gray-200"></div>`;
 
-
+    // Get isAdmin from the container's data attribute
+    const container = document.getElementById('events-container');
+    const isAdminUser = container ? container.getAttribute('data-is-admin') === 'True' : false;
 
     articleElement.innerHTML = `
         <div class="relative aspect-[16/9] overflow-hidden">
@@ -279,7 +280,7 @@ function buildEventCardElement(eventItem) {
                     Check Detail
                 </button>
 
-                ${isAdmin ? `
+                ${isAdminUser ? `
                 <!-- Admin Action Buttons in Content Area -->
                 <a href="${editUrl}"
                    class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
@@ -469,8 +470,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     showNotification(successNotification);
                     closeModal();
 
+                    // Add the new event to allEventData array
+                    allEventData.unshift(result.event);
+
                     // Add the new event to the grid immediately
                     addEventToGrid(result.event);
+
+                    // Hide empty message if it was showing
+                    displayPageSection({ showGrid: true });
 
                 } else {
                     // Error
@@ -513,18 +520,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return cookieValue;
         }
 
-        // Function to add new event to grid
+        // Function to add new event to grid (FIXED VERSION)
         function addEventToGrid(eventData) {
             const gridContainer = document.getElementById('events-grid');
+
+            // Check if we should display this event based on current filter
+            if (activeFilter !== 'all' && activeFilter !== eventData.category) {
+                console.log('Event filtered out due to active filter:', activeFilter);
+                return; // Don't add to grid if it doesn't match the filter
+            }
+
+            // Build the card element
             const cardElement = buildEventCardElement(eventData);
+
+            // Check if grid is empty (showing empty message)
+            const emptyDisplay = document.getElementById('empty');
+            if (!emptyDisplay.classList.contains('hidden')) {
+                // Grid was empty, clear it and show grid
+                gridContainer.innerHTML = '';
+                emptyDisplay.classList.add('hidden');
+                gridContainer.classList.remove('hidden');
+            }
 
             // Add to beginning of grid
             gridContainer.insertBefore(cardElement, gridContainer.firstChild);
 
-            // Update filter if needed
-            if (activeFilter !== 'all' && activeFilter !== eventData.category) {
-                cardElement.style.display = 'none';
-            }
+            console.log('Event added to grid:', eventData.name);
         }
     }
 });
