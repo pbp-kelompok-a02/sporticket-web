@@ -10,7 +10,7 @@ def index(request):
 app_name = 'event'
 
 urlpatterns = [
-	path('events/', show_event_main, name='show_event_main'),
+	path('', show_event_main, name='show_event_main'),
     path('events/json/', show_json, name='show_json'),
     path('events/add/', add_event, name='add_event'),
     path('events/add-event-ajax/', add_event_ajax, name='add_event_ajax'),
