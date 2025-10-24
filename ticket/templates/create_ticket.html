@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block meta %}
+<title>Create Ticket - Sporticket</title>
+{% endblock meta %}
+
+{% block content %}
+
+<!-- Form -->
+<div>
+  <div>
+    <h1>Create New Ticket</h1>
+  </div>
+
+  <form method="POST">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}">
+          {{ field.label }}
+        </label>
+        <div>
+          {{ field }}
+        </div>
+        {% if field.help_text %}
+          <p>{{ field.help_text }}</p>
+        {% endif %}
+        {% for error in field.errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <div>
+      <a href="{% url 'ticket:show_tickets' %}">Cancel</a>
+      <button type="submit">Publish Ticket</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
