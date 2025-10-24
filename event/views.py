@@ -1,6 +1,11 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.html import strip_tags
+from django.views.decorators.csrf import csrf_exempt
+from review.models import Review
+from django.db.models import Avg, Count
+
+from .utils import admin_required, is_admin
 
 import event
 from event.models import Event
@@ -16,15 +21,17 @@ def show_event_main(request):
     if filter_category and filter_category != 'all':
         event_list = event_list.filter(category=filter_category)
 
+    is_user_admin = request.user.is_authenticated and is_admin(request.user)
 
     context = {
         'event_list': event_list,
         'filter_category': filter_category,
         'categories': categories,
+        'is_admin': is_user_admin,
     }
     return render(request, 'event_main.html', context)
 
-
+@admin_required
 def add_event(request):
     form = EventForm(request.POST or None)
 
@@ -37,10 +44,24 @@ def add_event(request):
 
 def event_detail(request, match_id):
     event = get_object_or_404(Event, match_id=match_id)
-    context = {'event': event}
 
+    reviews = Review.objects.filter(event=event).aggregate(avg_rating=Avg('rating'),
+                                                           total_reviews=Count('id'))
+    user_review = None
+    if request.user.is_authenticated:
+        user_review = Review.objects.filter(event=event, user=request.user).first()
+    review_form = None #TODO: ADD REVIEW FORM
+    context = {
+        'event': event,
+        'reviews': reviews,
+        'user_review': user_review,
+        'review_form': review_form,
+        'is_admin': request.user.is_authenticated and hasattr(request.user,
+                                                              'profile') and request.user.profile.role == 'Admin',
+    }
     return render(request, 'event_detail.html', context)
 
+@admin_required
 def edit_event(request, id):
     event = get_object_or_404(Event, pk=id)
     form = EventForm(request.POST or None, instance=event)
@@ -51,11 +72,14 @@ def edit_event(request, id):
 
     return render(request, 'edit_event.html', context)
 
+@admin_required
 def delete_event(request, id):
     event = get_object_or_404(Event, pk=id)
     event.delete()
     return redirect('event:show_event_main')
 
+@admin_required
+@csrf_exempt
 def add_event_ajax(request):
     name = strip_tags(request.POST.get('name'))
     category = request.POST.get('category')
@@ -92,7 +116,7 @@ def show_json(request):
             'home_team': event.home_team,
             'away_team': event.away_team,
             'description': event.description,
-            'poster': event.poster.url if event.poster else None,  # Fixed: get URL
+            'poster': str(event.poster) if event.poster else None,
             'venue': event.venue,
             'date': event.date.isoformat() if event.date else None,  # Convert datetime to string
             'capacity': event.capacity,

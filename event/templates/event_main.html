@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load static %}
 
@@ -5,7 +6,22 @@
 <br />
 <div class="min-h-screen w-full bg-gray-50 pt-2">
   <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-    <!-- filters -->
+
+    <!--  Add Event button -->
+      {% if is_admin %}
+    <div class="mb-6 flex justify-between items-center">
+      <div></div> <!-- Spacer -->
+      <button id="openAddEventModal"
+              class="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Add New Event
+      </button>
+    </div>
+      {% endif %}
+
+    <!-- Your existing filters -->
     <div class="mb-6 flex justify-between space-x-8 border-b border-gray-200">
       <div class="flex space-x-8">
         <a href="#" id="filter-all">All Events</a>
@@ -17,27 +33,140 @@
       </div>
     </div>
 
-    <!-- Loading State -->
+    <!-- Your existing loading/error/grid states -->
     <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
       <p>Loading events...</p>
     </div>
 
-    <!-- Error State -->
     <div id="error" class="hidden rounded-lg border border-red-200 bg-red-50 p-12 text-center">
       <h3 class="mb-2 text-lg font-medium text-red-900">Error loading events</h3>
       <p class="text-red-700" id="error-message">Please try again later.</p>
     </div>
 
-    <!-- Events Grid -->
     <div id="events-grid" class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       <!-- Events will be loaded here via AJAX -->
     </div>
 
-    <!-- Empty State -->
     <div id="empty" class="hidden rounded-lg border border-gray-200 bg-white p-12 text-center">
       <h3 class="mb-2 text-lg font-medium text-gray-900">No events were found!</h3>
       <a href="{% url 'event:add_event' %}" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">Add Event</a>
     </div>
+
+    <!-- ===== ADD THE AJAX MODAL HERE ===== -->
+    <!-- Add Event Modal -->
+    <div id="addEventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-2xl font-bold text-gray-900">Add New Event</h3>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4">
+                <form id="addEventForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Event Name -->
+                        <div class="col-span-2">
+                            <label for="eventName" class="block text-sm font-medium text-gray-700">Event Name *</label>
+                            <input type="text" id="eventName" name="name" required
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <!-- Category -->
+                        <div>
+                            <label for="eventCategory" class="block text-sm font-medium text-gray-700">Category *</label>
+                            <select id="eventCategory" name="category" required
+                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                                <option value="">Select Category</option>
+                                <option value="football">Football</option>
+                                <option value="basketball">Basketball</option>
+                                <option value="volleyball">Volleyball</option>
+                                <option value="tennis">Tennis</option>
+                                <option value="badminton">Badminton</option>
+                            </select>
+                        </div>
+
+                        <!-- Date -->
+                        <div>
+                            <label for="eventDate" class="block text-sm font-medium text-gray-700">Date *</label>
+                            <input type="date" id="eventDate" name="date" required
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <!-- Venue -->
+                        <div class="col-span-2">
+                            <label for="eventVenue" class="block text-sm font-medium text-gray-700">Venue *</label>
+                            <input type="text" id="eventVenue" name="venue" required
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <!-- Teams -->
+                        <div>
+                            <label for="homeTeam" class="block text-sm font-medium text-gray-700">Home Team</label>
+                            <input type="text" id="homeTeam" name="home_team"
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <div>
+                            <label for="awayTeam" class="block text-sm font-medium text-gray-700">Away Team</label>
+                            <input type="text" id="awayTeam" name="away_team"
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <!-- Capacity -->
+                        <div>
+                            <label for="eventCapacity" class="block text-sm font-medium text-gray-700">Capacity</label>
+                            <input type="number" id="eventCapacity" name="capacity" min="0"
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                        </div>
+
+                        <!-- Poster URL -->
+                        <div>
+                            <label for="eventPoster" class="block text-sm font-medium text-gray-700">Poster URL</label>
+                            <input type="url" id="eventPoster" name="poster"
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                   placeholder="https://example.com/poster.jpg">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-span-2">
+                            <label for="eventDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="eventDescription" name="description" rows="3"
+                                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" id="cancelAddEvent"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Add Event
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="successNotification" class="fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg hidden z-50">
+        Event added successfully!
+    </div>
+
+    <div id="errorNotification" class="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg hidden z-50">
+        <span id="errorMessage"></span>
+    </div>
+    <!-- ===== END OF AJAX MODAL ===== -->
+
   </div>
 </div>
 
@@ -115,6 +244,8 @@ function buildEventCardElement(eventItem) {
     articleElement.dataset.category = eventItem.category;
 
     const detailUrl = `{% url 'event:event_detail' '00' %}`.replace('00', eventItem.match_id);
+    const editUrl = `{% url 'event:edit_event' '00' %}`.replace('00', eventItem.match_id);
+    const deleteUrl = `{% url 'event:delete_event' '00' %}`.replace('00', eventItem.match_id);
     const sportIcon = categoryIcons[eventItem.category] || categoryIcons.football;
 
     const formatDate = (dateString) => {
@@ -131,26 +262,79 @@ function buildEventCardElement(eventItem) {
         `<img src="${eventItem.poster}" alt="${eventItem.name}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200\'></div>'">` :
         `<div class="w-full h-full bg-gray-200"></div>`;
 
+    // Check if user is admin (you'll need to pass this from Django)
+    const isAdmin = {% if is_admin %}true{% else %}false{% endif %};
+
     articleElement.innerHTML = `
         <div class="relative aspect-[16/9] overflow-hidden">
             ${posterHtml}
+
+            <!-- Admin Action Buttons (Top Left) -->
+            ${isAdmin ? `
+            <div class="absolute top-3 left-3 flex space-x-2">
+                <a href="${editUrl}"
+                   class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md transition-colors shadow-lg"
+                   title="Edit Event">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+                <a href="${deleteUrl}"
+                   class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-md transition-colors shadow-lg"
+                   title="Delete Event"
+                   onclick="return confirm('Are you sure you want to delete ${eventItem.name}? This action cannot be undone.');">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </a>
+            </div>
+            ` : ''}
+
+            <!-- Sport Badge (Top Right) -->
             <div class="absolute top-3 right-3 flex space-x-2 bg-white rounded-md p-2 shadow-lg">
                 <img src="${sportIcon}" alt="${eventItem.category}" class="w-6 h-6" onerror="this.style.display='none'">
             </div>
         </div>
+
+        <!-- Content -->
         <div class="p-5">
             <h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900">
                 <a href="${detailUrl}" class="transition-colors hover:text-blue-600">${eventItem.name}</a>
             </h3>
             <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">${eventItem.venue || 'Venue TBD'}</h2>
+
             <div class="flex items-center space-x-2 text-gray-700">
                 <img src="https://assets.streamlinehq.com/image/private/w_300,h_300,ar_1/f_auto/v1/icons/all-icons/calendar-hxx1j6ge7nbk1xlqmfl5w9.png/calendar-xoaigr9z259n0zw0pl1c.png" class="w-5 h-5">
                 <span class="text-sm font-medium">${formatDate(eventItem.date)}</span>
             </div>
+
             <br>
-            <button onclick="location.href='${detailUrl}'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
-                Check Detail
-            </button>
+
+            <div class="flex space-x-2">
+                <button onclick="location.href='${detailUrl}'"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                    Check Detail
+                </button>
+
+                ${isAdmin ? `
+                <!-- Admin Action Buttons in Content Area -->
+                <a href="${editUrl}"
+                   class="bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+                   title="Edit">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+                <a href="${deleteUrl}"
+                   class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
+                   title="Delete"
+                   onclick="return confirm('Are you sure you want to delete ${eventItem.name}? This action cannot be undone.');">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </a>
+                ` : ''}
+            </div>
         </div>
     `;
 
@@ -247,6 +431,142 @@ function setupFilterEventListeners() {
         }
     });
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const openModalBtn = document.getElementById('openAddEventModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelAddEvent');
+    const modal = document.getElementById('addEventModal');
+    const form = document.getElementById('addEventForm');
+    const successNotification = document.getElementById('successNotification');
+    const errorNotification = document.getElementById('errorNotification');
+    const errorMessage = document.getElementById('errorMessage');
+
+    if (openModalBtn) {
+        // Open Modal
+        openModalBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+        });
+
+        // Close Modal
+        function closeModal() {
+            modal.classList.add('hidden');
+            form.reset();
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+
+            // Show loading state
+            submitBtn.textContent = 'Adding...';
+            submitBtn.disabled = true;
+
+            try {
+                // Get form data
+                const formData = new FormData(form);
+                const eventData = {
+                    name: formData.get('name'),
+                    category: formData.get('category'),
+                    date: formData.get('date'),
+                    venue: formData.get('venue'),
+                    capacity: parseInt(formData.get('capacity') || 0),
+                    home_team: formData.get('home_team') || '',
+                    away_team: formData.get('away_team') || '',
+                    description: formData.get('description') || '',
+                    poster: formData.get('poster') || '',
+                };
+
+                // Send AJAX request
+                const response = await fetch("{% url 'event:add_event_ajax' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify(eventData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Success
+                    showNotification(successNotification);
+                    closeModal();
+
+                    // Add the new event to the grid immediately
+                    addEventToGrid(result.event);
+
+                } else {
+                    // Error
+                    errorMessage.textContent = result.error || 'Failed to add event';
+                    showNotification(errorNotification);
+                }
+
+            } catch (error) {
+                console.error('Error adding event:', error);
+                errorMessage.textContent = 'Network error. Please try again.';
+                showNotification(errorNotification);
+            } finally {
+                // Reset button
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Helper function to show notifications
+        function showNotification(notification) {
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Function to add new event to grid
+        function addEventToGrid(eventData) {
+            const gridContainer = document.getElementById('events-grid');
+            const cardElement = buildEventCardElement(eventData);
+
+            // Add to beginning of grid
+            gridContainer.insertBefore(cardElement, gridContainer.firstChild);
+
+            // Update filter if needed
+            if (activeFilter !== 'all' && activeFilter !== eventData.category) {
+                cardElement.style.display = 'none';
+            }
+        }
+    }
+});
+
+
 
 // Initialize from URL
 function initializeFromURL() {
