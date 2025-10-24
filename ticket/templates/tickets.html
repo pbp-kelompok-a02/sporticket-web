@@ -30,10 +30,13 @@
         </a>
       </div>
     {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for ticket in ticket_list %}
-          {% include 'card_ticket.html' with ticket=ticket %}
-        {% endfor %}
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <img src="" alt="">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for ticket in ticket_list %}
+            {% include 'card_ticket.html' with ticket=ticket %}
+          {% endfor %}
+        </div>
       </div>
     {% endif %}
   </div>
