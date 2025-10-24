@@ -49,19 +49,17 @@ def event_detail(request, match_id):
     user_review = None
     if request.user.is_authenticated:
         user_review = Review.objects.filter(event=event, user=request.user).first()
-    review_form = None #TODO: ADD REVIEW FORM
     context = {
         'event': event,
         'reviews': reviews,
         'user_review': user_review,
-        'review_form': review_form,
         'is_admin': request.user.is_superuser,
     }
     return render(request, 'event_detail.html', context)
 
 @user_passes_test(is_admin)
-def edit_event(request, id):
-    event = get_object_or_404(Event, pk=id)
+def edit_event(request, match_id):
+    event = get_object_or_404(Event, match_id=match_id)
     form = EventForm(request.POST or None, instance=event)
     if form.is_valid() and request.method == 'POST':
         form.save()
@@ -71,8 +69,8 @@ def edit_event(request, id):
     return render(request, 'edit_event.html', context)
 
 @user_passes_test(is_admin)
-def delete_event(request, id):
-    event = get_object_or_404(Event, pk=id)
+def delete_event(request, match_id):
+    event = get_object_or_404(Event, match_id=match_id)
     event.delete()
     return redirect('event:show_event_main')
 
