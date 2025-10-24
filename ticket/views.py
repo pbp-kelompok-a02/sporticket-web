@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from ticket.models import Ticket
+from event.models import Event
 from ticket.forms import TicketForm
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, JsonResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+import json
 from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 from django.contrib.auth.decorators import user_passes_test
@@ -17,9 +19,13 @@ def is_admin(user):
 # @login_required
 def show_tickets(request):
     ticket_list = Ticket.objects.all()
+    first_ticket = ticket_list.first()
+    event_list = Event.objects.all()
 
     context = {
         'ticket_list': ticket_list,
+        'first_ticket': first_ticket,
+        'event_list': event_list
     }
     return render(request, "tickets.html", context)
 
@@ -34,14 +40,6 @@ def create_ticket(request):
 
     context = {'form': form}
     return render(request, "create_ticket.html", context)
-
-# @user_passes_test(is_admin)
-# @login_required
-def ticket_detail(request, id):
-    ticket = get_object_or_404(Ticket, pk=id)
-
-    context = {'ticket': ticket}
-    return render(request, "ticket_detail.html", context)
 
 # @user_passes_test(is_admin)
 # @login_required
@@ -67,15 +65,43 @@ def delete_ticket(request, id):
     return HttpResponse(b"DELETED", status=201)
 
 def show_json(request):
-    ticket_list = Ticket.objects.all()
+    ticket_list = Ticket.objects.all().order_by('-id')  # urut dari terbaru
     data = [
         {
-            'id': str(ticket.id),
-            'category': ticket.category,
-            'price': ticket.price,
+            'id': ticket.id,
+            'event': ticket.event if ticket.event else None,
+            'category': ticket.event.category if ticket.event else None,
+            'price': float(ticket.price),
             'stock': ticket.stock,
         }
         for ticket in ticket_list
     ]
-
     return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def delete_ticket_ajax(request, id):
+    if request.method == 'GET':
+        ticket = get_object_or_404(Ticket, pk=id)
+        ticket.delete()
+        return JsonResponse({'deleted': True})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+def add_ticket_ajax(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        event = Event.objects.get(id=data['event_id'])
+        ticket = Ticket.objects.create(
+            event=event,
+            category=data['category'],
+            price=data['price'],
+            stock=data['stock']
+        )
+        return JsonResponse({
+            'id': ticket.id,
+            'event_name': ticket.event.name,
+            'category': ticket.category,
+            'price': float(ticket.price),
+            'stock': ticket.stock
+        })
+    return JsonResponse({'error': 'Invalid request'}, status=400)

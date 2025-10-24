@@ -1,60 +1,35 @@
 from django.db import models
-from django.contrib.auth.models import (
-	AbstractBaseUser, BaseUserManager, PermissionsMixin
-)
-from django.utils import timezone
+from django.contrib.auth.models import User
 
 
-class UserManager(BaseUserManager):
-	def create_user(self, email, name=None, password=None, role='Buyer', phone_number=None, **extra_fields):
-		if not email:
-			raise ValueError('User must have a valid email')
-		email = self.normalize_email(email) # normalisasi email, yaitu mengubah domain menjadi lowercase
-		# buat instance user
-		user = self.model(email=email, name=name or '', role=role, phone_number=phone_number, **extra_fields)
-		user.set_password(password) # set password dengan hashing
-		user.save(using=self._db) # simpan user ke database
-		return user
-
-	def create_admin(self, email, name=None, password=None, phone_number=None, **extra_fields):
-		# application-level admin, bukan Django superuser		
-		extra_fields.setdefault('is_active', True)
-		return self.create_user(email=email, name=name, password=password, role='Admin', phone_number=phone_number, **extra_fields)
-
-
-class User(AbstractBaseUser, PermissionsMixin): 
+class Profile(models.Model):
 	ROLE_CHOICES = (
 		('Admin', 'Admin'),
 		('Buyer', 'Buyer'),
 	)
 
-	email = models.EmailField(unique=True)
+	# field email dan password sudah ada di model User
+	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
 	name = models.CharField(max_length=150, blank=True)
 	role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Buyer')
-	phone_number = models.CharField(max_length=30, blank=True, null=True)
+	phone_number = models.CharField(max_length=30, blank=True, null=True, unique=True)
 	profile_photo = models.ImageField(upload_to='profiles/', blank=True, null=True)
 
-	is_active = models.BooleanField(default=True) # apakah akun aktif
-	is_staff = models.BooleanField(default=False) # akses ke admin site (tidak digunakan karena pakai custom admin UI)
-	date_joined = models.DateTimeField(default=timezone.now)
-
-	objects = UserManager() # custom user manager untuk membuat user dan admin
-
-	USERNAME_FIELD = 'email'
-	REQUIRED_FIELDS = []
-
 	def __str__(self):
-		return f"{self.email} ({self.role})"
-
-	def get_full_name(self):
-		return self.name or self.email
-
-	def get_short_name(self):
-		return self.name or self.email
+		return f"{self.name or self.user.get_username()} ({getattr(self.user, 'email', '')})"
 
 	@property
-	def is_app_admin(self):
-		"""Application-level admin check (role == 'Admin').
-		Digunakan di views/decorators untuk melindungi halaman admin dari akses non-admin.
-		"""
-		return self.role == 'Admin'
+	def email(self):
+		return getattr(self.user, 'email', '')
+
+	def set_password(self, raw_password):
+		self.user.set_password(raw_password)
+		self.user.save(update_fields=['password'])
+
+	def get_display_name(self):
+		return self.name or getattr(self.user, 'get_full_name', lambda: '')()
+
+	class Meta:
+		verbose_name = 'Profile'
+		verbose_name_plural = 'Profiles'
+

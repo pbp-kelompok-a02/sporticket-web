@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Purchase Ticket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f9f9f9;
+    }
+    .container {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .form-section {
+      flex: 1;
+      margin-right: 20px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .form-section h2 {
+      margin-top: 0;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .info {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #333;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #3b82f6;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background: #aaa;
+      cursor: not-allowed;
+    }
+    .notification {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+    .success { background: #d1fae5; color: #065f46; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .stadium {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .stadium img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Form -->
+    <div class="form-section">
+      <h2>{{ ticket.event.name }}</h2>
+
+    {% if error_message %}
+      <div class="notification error">{{ error_message }}</div>
+    {% endif %}
+
+      <form id="order-form" method="post" action="">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label for="id_quantity">Ticket amount:</label>
+          <input type="number" id="id_quantity" name="quantity" min="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="id_ticket">Seating Location:</label>
+          <select id="id_ticket" name="ticket_id" required>
+            {% for t in ticket.event.tickets.all %}
+              <option value="{{ t.id }}">
+                {{ t.get_category_display }} — Rp {{ t.price }} (Tersisa: {{ t.stock }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="info">
+          <p><strong>Note:</strong> Pilih kategori tiket untuk melihat harga dan stoknya.</p>
+        </div>
+
+        <button type="submit" name="action" value="purchase" class="btn">Purchase</button>
+        <button type="submit" name="action" value="pending" class="btn">Save Ticket</button>
+      </form>
+
+      <!-- Notification -->
+      <div id="notification" class="notification"></div>
+    </div>
+
+
+  </div>
+
+  <script>
+    const form = document.getElementById('order-form');
+    const notif = document.getElementById('notification');
+
+    form.addEventListener('submit', function(event) {
+      const qty = parseInt(document.getElementById('id_quantity').value);
+      const select = document.getElementById('id_category');
+      const selectedOption = select.options[select.selectedIndex];
+      const stockText = selectedOption.textContent.match(/Tersisa: (\d+)/);
+      const stock = stockText ? parseInt(stockText[1]) : 0;
+
+      if (qty > stock) {
+        event.preventDefault();
+        notif.textContent = "❌ Jumlah tiket melebihi stok tersedia!";
+        notif.className = "notification error";
+        notif.style.display = "block";
+      } else {
+        notif.textContent = "✅ Purchase berhasil dibuat!";
+        notif.className = "notification success";
+        notif.style.display = "block";
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -160,9 +160,6 @@ else:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Gunakan model pengguna kustom dari app 'account' (peran tingkat aplikasi: Admin/Pembeli)
-AUTH_USER_MODEL = 'account.User'
-
 # MEDIA (untuk ImageField)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

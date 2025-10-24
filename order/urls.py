@@ -1,13 +1,11 @@
 from django.urls import path
-from django.http import HttpResponse
+from . import views
 
-# ini cuma biar gw bisa makemigrations
-# nanti kalian apus aja trs ganti sm urls kalian yg bener
-def index(request):
-	return HttpResponse('Order index')
-
-app_name = 'order'
+app_name = "order"
 
 urlpatterns = [
-	path('', index, name='index'),
+    path("create/<int:ticket_id>/", views.create_order, name="create"),
+    path("edit/<int:ticket_id>/<int:order_id>/", views.create_order, name="edit"),
+    path("history/", views.order_history, name="history"),
+    path("cancel/<int:order_id>/", views.cancel_order, name="cancel"),
 ]

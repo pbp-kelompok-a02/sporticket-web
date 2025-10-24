@@ -1,5 +1,3 @@
-<!-- cek apakah admin atau bukan -->
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -9,6 +7,8 @@
 
 {% block content %}
 {% include 'navbar.html' %}
+{% include 'create_ticket.html' %}
+
 <div class="bg-gray-50 w-full pt-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -18,193 +18,143 @@
       <p class="text-gray-600">Stay updated with the latest Sport Match</p>
     </div>
 
-    <!-- News Grid -->
+    <!-- CEK USER ATAU ADMIN -->
+      <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-white text-[#537FB9] font-semibold outline outline-2 outline-[#537FB9] outline-offset-[-2px] rounded-md hover:bg-[#537FFF] hover:text-white transition-colors mb-4">
+        Create Ticket
+      </button>
+
+    <!-- Ticket Grid -->
     {% if not ticket_list %}
       <div class="bg-white rounded-lg border border-gray-200 p-12 text-center">
         <div class="w-32 h-32 mx-auto mb-4">
           <img src="{% static 'image/no-news.png' %}" alt="No ticket available" class="w-full h-full object-contain">
         </div>
         <h3 class="text-lg font-medium text-gray-900 mb-2">No ticket found</h3>
-        <a href="{% url 'ticket:create_ticket' %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-          Create Ticket
-        </a>
       </div>
     {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2">
-        <img src="" alt="">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {% for ticket in ticket_list %}
-            {% include 'card_ticket.html' with ticket=ticket %}
-          {% endfor %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-w-6xl mx-auto">
+        <div class="flex justify-center items.center9">
+          {% if first_ticket.event.category == 'badminton' %}
+            <img src="{% static 'image/badminton.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+          {% elif first_ticket.event.category == 'football' %}
+            <img src="{% static 'image/football.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+          {% elif first_ticket.event.category == 'basketball' %}
+            <img src="{% static 'image/basketball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+          {% elif first_ticket.event.category == 'volleyball' %}
+            <img src="{% static 'image/volleyball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+          {% elif first_ticket.event.category == 'tennis' %}
+            <img src="{% static 'image/tennis.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col justify-start h-[600px] overflow-y-auto">
+          <div id="loading" class="text-center text-gray-500 py-4 hidden">
+            Loading tickets...
+          </div>
+          <div id="ticket-container" class="flex flex-col space-y-3 w-full">
+            {% for ticket in ticket_list %}
+              {% include 'card_ticket.html' with ticket=ticket %}
+            {% endfor %}
+          </div>
         </div>
       </div>
     {% endif %}
   </div>
 </div>
-{% endblock content %}
 
-<!-- <script>
-// Configuration
-const TICKET_API_ENDPOINT = "{% url 'ticket:show_json' %}";
+<script>
 
-// DOM Elements
-const loadingSpinner = document.getElementById('loading');
-const errorMessage = document.getElementById('error');
-const emptyStateDisplay = document.getElementById('empty');
-const TicketGridContainer = document.getElementById('grid');
-const showAllTicketButton = document.getElementById('filter-all');
-const showMyTicketButton = document.getElementById('filter-my');
+// Refresh ticket list
+async function refreshTickets() {
+  const loading = document.getElementById("loading");
+  const container = document.getElementById("ticket-container");
 
-// State Variables
-let activeFilter = 'all';
-let allTicketData = [];
+  loading.classList.remove("hidden");
+  container.innerHTML = "";
 
-// Update filter button appearance
-function updateFilterButtonsAppearance() {
-  if (!showAllTicketButton || !showMyTicketButton) return;
-  
-  if (activeFilter === 'all') {
-    showAllTicketButton.className = 'bg-green-600 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-700';
-    showMyTicketButton.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-600 hover:text-white';
-  } else {
-    showMyTicketButton.className = 'bg-green-600 text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-700';
-    showAllTicketButton.className = 'bg-white text-gray-700 border border-gray-300 px-4 py-2 rounded-md font-medium transition-colors hover:bg-green-600 hover:text-white';
-  }
-}
-
-// Show/hide page sections
-function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
-  loadingSpinner.classList.toggle('hidden', !showLoading);
-  errorMessage.classList.toggle('hidden', !showError);
-  emptyStateDisplay.classList.toggle('hidden', !showEmpty);
-  TicketGridContainer.classList.toggle('hidden', !showGrid);
-  
-  // Add grid classes when showing grid
-  if (showGrid) {
-    TicketGridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
-  }
-}
-
-// Get readable category name
-function getReadableCategoryName(categoryCode) {
-  const categoryMapping = {
-    vip: "VIP",
-    reg: "REG"
-  };
-  return categoryMapping[categoryCode] || categoryCode;
-}
-
-// Create Ticket card element
-function buildTicketCardElement(item) {
-    const article = document.createElement('article');
-    article.className = 'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
-
-    const linkDetail = `{% url 'ticket:ticket_detail' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-    const linkEdit = `{% url 'ticket:edit_ticket' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-    const linkDelete = `{% url 'ticket:delete_ticket' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', item.id);
-
-    const category = DOMPurify.sanitize(item.category);
-    const price = DOMPurify.sanitize(item.price);
-    const stock = DOMPurify.sanitize(item.stock);
-
-    // const thumbnailHtml = DOMPurify.sanitize(
-    //   item.thumbnail ? `<img src='${thumbnail}' alt='${title}' class='w-full h-full object-cover'>` : `<div class='w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center'></div>`
-    // );
-    const categoryLabel = DOMPurify.sanitize(getReadableCategoryName(category));
-
-    const editDeleteHtml = `<div class='flex space-x-2'>
-        <a href='${linkEdit}' class='text-gray-600 hover:text-gray-700 text-sm transition-colors'>Edit</a>
-        <a href='${linkDelete}' class='text-red-600 hover:text-red-700 text-sm transition-colors' onclick='return confirm("Are you sure you want to delete this article?")'>Delete</a>
-        </div>`
-    ;
-
-    const cardHtml = `
-      <div class="p-5 flex flex-col flex-1">
-        <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
-          <a href="${linkDetail}" class="hover:text-green-600 transition-colors">${title}</a>
-        </h3>
-        <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">${content}</p>
-        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
-          <a href="${linkDetail}" class="text-green-600 hover:text-green-700 font-medium text-sm transition-colors">Read more</a>
-          ${editDeleteHtml}
-        </div>
-      </div>
-    `;
-    
-    article.innerHTML = cardHtml;
-    return article;
-}
-
-// Render all Ticket cards
-function renderAllTicketCards(ticketItems) {
-  TicketGridContainer.innerHTML = '';
-  ticketItems.forEach(ticketItem => {
-    const cardElement = buildTicketCardElement(ticketItem);
-    TicketGridContainer.appendChild(cardElement);
-  });
-}
-
-// Filter and display Ticket
-function filterAndDisplayTicket() {
-  updateFilterButtonsAppearance();
-  
-  const filteredTicket = allTicketData;
-  
-  if (filteredTicket.length === 0) {
-    displayPageSection({ showEmpty: true });
-  } else {
-    renderAllTicketCards(filteredTicket);
-    displayPageSection({ showGrid: true });
-  }
-}
-
-// Fetch Ticket data from server
-async function fetchTicketFromServer() {
   try {
-    displayPageSection({ showLoading: true });
-    
-    const response = await fetch(TICKET_API_ENDPOINT, {
-      headers: { 'Accept': 'application/json' },
-    });
+    const response = await fetch("{% url 'ticket:show_json' %}");
+    const tickets = await response.json();
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch ticket data from server');
+    loading.classList.add("hidden");
+
+    if (tickets.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white rounded-lg border border-gray-200 p-6 text-center">
+          No ticket found
+        </div>
+      `;
+      return;
     }
 
-    const TicketData = await response.json();
-    allTicketData = TicketData || [];
-    
-    filterAndDisplayTicket();
-  } catch (error) {
-    console.error('Error loading Ticket:', error);
-    displayPageSection({ showError: true });
+    tickets.forEach(ticket => {
+      const card = `
+        <div class="p-4 bg-white rounded-lg shadow flex justify-between items-center">
+          <div>
+            <h3 class="text-lg font-semibold">${ticket.event || 'Unknown Event'}</h3>
+            <p class="text-gray-600">Category: ${ticket.category || '-'}</p>
+            <p class="text-gray-600">Price: $${ticket.price}</p>
+            <p class="text-gray-600">Stock: ${ticket.stock}</p>
+          </div>
+          <button onclick="deleteTicket('${ticket.id}')"
+                  class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+            Delete
+          </button>
+        </div>
+      `;
+      container.innerHTML += card;
+    });
+  } catch (err) {
+    loading.textContent = "Failed to load tickets 😢";
   }
 }
 
-// Event handlers
-function handleShowAllTicketClick() {
-  activeFilter = 'all';
-  filterAndDisplayTicket();
+// Delete ticket
+async function deleteTicket(id) {
+  const response = await fetch(`/ticket/delete-ticket/${id}/`, {
+    method: "DELETE",
+    headers: { "X-CSRFToken": csrfToken }
+  });
+  if (response.ok) {
+    refreshTickets();
+  }
 }
 
-function handleShowMyTicketClick() {
-  activeFilter = 'all';
-  filterAndDisplayTicket();
-}
+const csrfToken = '{{ csrf_token }}';
+// Add new ticket via AJAX
+document.getElementById("submitNews").addEventListener("click", async function(e) {
+  e.preventDefault();
 
-// Initialize page
-function initializeTicketPage() {
-  showAllTicketButton.addEventListener('click', handleShowAllTicketClick);
-  showMyTicketButton.addEventListener('click', handleShowMyTicketClick);
-  
-  fetchTicketFromServer();
-}
+  const eventId = document.getElementById('event').value;
+  const category = document.getElementById("category").value;
+  const price = document.getElementById("price").value;
+  const stock = document.getElementById("stock").value;
 
-// Start application
-initializeTicketPage();
+  if (!category || !price || !stock || !eventId) return alert("Please fill all fields");
 
-document.addEventListener('ticketAdded', function() {
-    // Refresh data without page reload
-    fetchTicketFromServer();
+  const response = await fetch("{% url 'ticket:add_ticket_ajax' %}", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken
+    },
+    body: JSON.stringify({
+      event_id: parseInt(eventId),
+      category: category,
+      price: parseFloat(price),
+      stock: parseInt(stock)
+    })
+  });
+
+  if (response.ok) {
+    hideModal();
+    refreshTickets();
+    document.getElementById("newsForm").reset();
+  } else {
+    alert("Failed to create ticket");
+  }
 });
-</script> -->
+
+document.addEventListener("DOMContentLoaded", refreshTickets);
+</script>
+{% endblock content %}
