@@ -43,7 +43,7 @@ def ticket_detail(request, id):
     context = {'ticket': ticket}
     return render(request, "ticket_detail.html", context)
 
-# @user_passes_test(is_admin)
+@user_passes_test(is_admin)
 # @login_required
 # @csrf_exempt
 def edit_ticket(request, id):
