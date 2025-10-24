@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth import (
     login, logout, get_user_model, update_session_auth_hash
 )
@@ -19,6 +19,8 @@ def get_user_role(user):
     return 'Buyer'
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect('event:show_event_main')
     if request.method == 'POST':
         form = RegistrationForm(request.POST, request.FILES)
         if form.is_valid():
@@ -66,6 +68,8 @@ def register(request):
     return render(request, 'account/register.html', context)
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('event:show_event_main')
     if request.method == 'POST':
         form = EmailAuthenticationForm(request, data=request.POST)        
         if form.is_valid():
@@ -122,7 +126,7 @@ def profile_view(request, user_id=None):
         target_user = get_object_or_404(User, pk=user_id)
     else:
         if not request.user.is_authenticated:
-            return HttpResponseForbidden('Login required to view your profile.')
+            return redirect('account:login')
         target_user = request.user
 
     viewer = request.user if request.user.is_authenticated else None

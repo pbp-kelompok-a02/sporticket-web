@@ -27,7 +27,7 @@
   <!-- Content -->
   <div class="p-5">
     <h3 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-gray-900">
-      <a href="{% url 'main:view_event' event.id %}" class="transition-colors hover:text-blue-600"> {{ event }} </a>
+      <a href="{% url 'event:event_detail' event.id %}" class="transition-colors hover:text-blue-600"> {{ event }} </a>
     </h3>
     <h2 class="mb-3 line-clamp-2 text-lg leading-tight font-semibold text-blue-700">{{ event.venue }}</h2>
 
@@ -38,7 +38,7 @@
 
     <br>
 
-    <button href="{% url 'event_detail' event.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+    <button href="{% url 'event:event_detail' event.id %}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
       Check Detail
     </button>
 
