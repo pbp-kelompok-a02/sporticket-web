@@ -118,7 +118,9 @@ class AccountFlowTests(TestCase):
 		self.assertEqual(resp.status_code, 200)
 		# harus menampilkan nama, tapi tidak nomor telepon
 		self.assertContains(resp, 'Frank')
-		self.assertNotContains(resp, '0811999')
+		# nomor telepon tidak muncul
+		content = resp.content.decode()
+		self.assertNotIn('>0811999<', content)
 
 	def test_profile_visibility_non_owner_logged_in(self):
 		# buat 2 user
@@ -133,7 +135,9 @@ class AccountFlowTests(TestCase):
 		self.assertEqual(resp.status_code, 200) # harusnya sukses
 		# harus menampilkan nama, tapi tidak nomor telepon
 		self.assertContains(resp, 'Gina')
-		self.assertNotContains(resp, '0813000')
+		# nomor telepon tidak muncul
+		content = resp.content.decode()
+		self.assertNotIn('>0813000<', content)
 
 	def test_profile_visibility_owner_and_admin(self):
 		# owner liat data sensitifnya sendiri

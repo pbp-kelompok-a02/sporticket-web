@@ -1,0 +1,77 @@
+{% load static %}
+<nav class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 shadow-sm z-50">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex items-center justify-between h-16">
+			<!-- Logo -->
+			<div class="flex items-center">
+				<a href="{% url 'event:show_event_main' %}" class="flex items-center gap-2">
+					<span class="text-xl font-bold text-[#3b5998]">SPORTICKET</span>
+				</a>
+			</div>
+
+			<!-- Desktop Navigation -->
+			<div class="hidden md:flex items-center space-x-8">
+				<a href="{% url 'event:show_event_main' %}" class="text-gray-700 hover:text-[#537fb9] font-medium transition-colors">Home</a>
+				{% if user.is_authenticated and not user.is_superuser %}
+					<a href="{% url 'order:history' %}" class="text-gray-700 hover:text-[#537fb9] font-medium transition-colors">History</a>
+				{% endif %}
+			</div>
+
+			<!-- Desktop User Section -->
+			<div class="hidden md:flex items-center space-x-4">
+				{% if user.is_authenticated %}
+					<a href="{% url 'account:profile' %}" class="text-sm font-bold text-gray-900 hover:text-[#537fb9]">{{ user.profile.name }}</a>
+					<a href="{% url 'account:logout' %}" class="text-white bg-red-600 border rounded-lg px-4 py-2 font-medium transition-colors hover:bg-[#781727] hover:text-white">Logout</a>
+				{% else %}
+					<a href="{% url 'account:login' %}" class="text-gray-700 hover:text-[#537fb9] font-medium transition-colors">Login</a>
+					<a href="{% url 'account:register' %}" class="bg-[#537fb9] hover:bg-[#3b5998] text-white px-4 py-2 rounded font-medium transition-colors">Register</a>
+				{% endif %}
+			</div>
+
+			<!-- Mobile Hamburger -->
+			<div class="md:hidden flex items-center">
+				<button id="mobile-menu-btn" class="p-2 text-gray-700 hover:text-[#537fb9] transition-colors focus:outline-none">
+					<span class="sr-only">Open menu</span>
+					<div class="w-6 h-6 flex flex-col justify-center items-center">
+						<span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+						<span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5"></span>
+						<span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
+					</div>
+				</button>
+			</div>
+		</div>
+	</div>
+	<!-- Mobile Menu -->
+	<div id="mobile-menu" class="mobile-menu hidden md:hidden bg-white border-t border-gray-200">
+		<div class="px-6 py-4 space-y-4">
+			<!-- Mobile Navigation Links -->
+			<div class="space-y-1">
+				<a href="{% url 'event:show_event_main' %}" class="block text-gray-700 hover:text-[#537fb9] font-medium py-2 transition-colors">Home</a>
+				{% if user.is_authenticated and not user.is_superuser %}
+					<a href="{% url 'order:history' %}" class="block text-gray-700 hover:text-[#537fb9] font-medium py-2 transition-colors">History</a>
+				{% endif %}
+			</div>
+			<!-- Mobile User Section -->
+			<div class="border-t border-gray-200 pt-4">
+				{% if user.is_authenticated %}
+					<div class="mb-4">
+						<a href="{% url 'account:profile' %}" class="font-bold text-gray-900 hover:text-[#537fb9]">{{ user.profile.name }}</a>
+					</div>
+					<a href="{% url 'account:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-2 transition-colors">Logout</a>
+				{% else %}
+					<div class="space-y-2 mt-2">
+						<a href="{% url 'account:login' %}" class="block text-gray-700 hover:text-[#537fb9] font-medium py-2 transition-colors">Login</a>
+						<a href="{% url 'account:register' %}" class="block bg-[#537fb9] hover:bg-[#3b5998] text-white font-medium py-2 px-4 rounded text-center transition-colors">Register</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	<script>
+		const btn = document.getElementById("mobile-menu-btn");
+		const menu = document.getElementById("mobile-menu");
+		btn.addEventListener("click", () => {
+			menu.classList.toggle("hidden");
+		});
+	</script>
+</nav>
