@@ -76,9 +76,7 @@
       <h3 class="text-lg font-semibold">Edit Ticket</h3>
       <button onclick="closeEditModal()" class="text-gray-500">✕</button>
     </div>
-    <div id="editModalBody">
-      <!-- Isi edit_ticket.html akan dimasukkan via AJAX -->
-    </div>
+    <div id="editModalBody"></div>
   </div>
 </div>
 
@@ -152,7 +150,7 @@ function openEditModal(ticketId, matchId) {
   modal.classList.remove('hidden');
   body.innerHTML = '<p class="p-4 text-gray-500">Loading form...</p>';
 
-  fetch(`ticket/${ticketId}/edit/`, {
+  fetch(`/ticket/${ticketId}/edit/`, {
   method: 'GET',
   headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
