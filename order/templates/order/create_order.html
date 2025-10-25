@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% include 'navbar.html' %}
 {% load static %}
 {% block content %}
 <!DOCTYPE html>
@@ -13,65 +12,73 @@
       margin: 0; padding: 0;
       background: #f9f9f9;
     }
-      .container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;   /* center both sections together */
-    align-items: center;       /* vertically center them */
-    gap: 60px;                 /* spacing between form and image */
-    max-width: 900px;          /* narrower container to keep things tight */
-    margin: 60px auto;         /* center on page */
-    padding: 20px 40px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  .form-section {
-  flex: 1;
-  max-width: 350px;    /* smaller, so it doesn’t stretch */
+
+    .container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;       /* vertically center */
+  justify-content: flex-start; /* align to left */
+  gap: 80px;                 /* space between form and stadium image */
+  max-width: 1400px;
+  margin: 40px auto;
   padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #f3f3f3;
 }
-    .form-section h2 {
-      margin-top: 0;
-      text-align: center;
-    }
+
+.form-section {
+  flex: 0 0 450px;           /* fixed wider form */
+  padding: 40px 30px;
+  background: #f3f3f3;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-section h2 {
+  font-size: 26px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
+
     label {
       display: block;
       margin-bottom: 6px;
       font-weight: bold;
     }
+
     input, select {
       width: 100%;
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
     .info {
-      margin-top: 12px;
+      margin: 10px 0;
       font-size: 14px;
       color: #333;
     }
+
     .btn {
-      display: inline-block;
-      padding: 10px 20px;
+      display: block;
+      width: 100%;
+      padding: 12px;
       border: none;
       border-radius: 6px;
       background: #3b82f6;
       color: white;
       font-size: 16px;
       cursor: pointer;
-      margin-right: 8px;
+      margin-bottom: 10px;
     }
+
     .btn:disabled {
       background: #aaa;
       cursor: not-allowed;
     }
+
     .notification {
       margin-top: 15px;
       padding: 10px;
@@ -79,20 +86,33 @@
       font-size: 14px;
       display: none;
     }
+
     .success { background: #d1fae5; color: #065f46; }
     .error { background: #fee2e2; color: #991b1b; }
 
     .stadium {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.stadium img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
+      flex: 1.5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .stadium img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .price-section {
+      margin: 15px 0;
+      font-size: 16px;
+    }
+
+    .price-section strong {
+      display: inline-block;
+      min-width: 100px;
+    }
   </style>
 </head>
 <body>
@@ -128,8 +148,9 @@
           </select>
         </div>
 
-        <div class="info">
-          <p><strong>Note:</strong> Pilih kategori tiket untuk melihat harga dan stoknya.</p>
+        <div class="price-section">
+          <p><strong>Price:</strong> Rp <span id="price-display">x</span></p>
+          <p><strong>Amount left:</strong> <span id="stock-display">x</span></p>
         </div>
 
         <button type="submit" name="action" value="purchase" class="btn">Purchase</button>
@@ -142,18 +163,43 @@
 
     <!-- Gambar kanan -->
     <div class="stadium">
-      <img src="{% static 'order/images/oldTrafford.png' %}" alt="Stadium Map">
-    </div>
+      {% if ticket.event.category == 'football' %}
+      <img src="{% static 'image/football.png' %}" alt="Football Stadium Map">
+    {% elif ticket.event.category == 'basketball' %}
+      <img src="{% static 'image/basketball.png' %}" alt="Basketball Court Map">
+    {% elif ticket.event.category == 'badminton' %}
+      <img src="{% static 'image/badminton.png' %}" alt="Badminton Arena Map">
+    {% elif ticket.event.category == 'volleyball' %}
+      <img src="{% static 'image/volleyball.png' %}" alt="Volleyball Arena Map">
+    {% elif ticket.event.category == 'tennis' %}
+      <img src="{% static 'image/tennis.png' %}" alt="Tennis Court Map">
+    {% else %}
+      <img src="{% static 'image/default.png' %}" alt="Default Stadium">
+    {% endif %}    </div>
 
   </div>
 
   <script>
     const form = document.getElementById('order-form');
     const notif = document.getElementById('notification');
+    const priceDisplay = document.getElementById('price-display');
+    const stockDisplay = document.getElementById('stock-display');
+    const select = document.getElementById('id_ticket');
+
+    // update price and stock when option changes
+    function updatePriceAndStock() {
+      const selectedOption = select.options[select.selectedIndex];
+      const priceMatch = selectedOption.textContent.match(/Rp ([0-9.]+)/);
+      const stockMatch = selectedOption.textContent.match(/Tersisa: (\d+)/);
+      priceDisplay.textContent = priceMatch ? priceMatch[1] : "x";
+      stockDisplay.textContent = stockMatch ? stockMatch[1] : "x";
+    }
+
+    select.addEventListener('change', updatePriceAndStock);
+    updatePriceAndStock(); // initial
 
     form.addEventListener('submit', function(event) {
       const qty = parseInt(document.getElementById('id_quantity').value);
-      const select = document.getElementById('id_ticket');
       const selectedOption = select.options[select.selectedIndex];
       const stockText = selectedOption.textContent.match(/Tersisa: (\d+)/);
       const stock = stockText ? parseInt(stockText[1]) : 0;
