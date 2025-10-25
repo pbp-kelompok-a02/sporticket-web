@@ -38,9 +38,10 @@
               Delete
             </button>
           {% else %}
-            <button>
+            <a href="{% url 'order:create' ticket.id %}" 
+               class="inline-flex items-center px-3 py-1 bg-[#537fb9] text-white rounded-md text-sm hover:bg-[#3b5998] transition-colors">
               Buy Ticket
-            </button>
+            </a>
           {% endif %}
         </div>
       </div>

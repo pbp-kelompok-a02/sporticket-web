@@ -70,7 +70,7 @@
           <td>{{ order.ticket.event.name }}</td>
           <td>{{ order.quantity }}</td>
           <td>{{ order.ticket.get_category_display }}</td>
-          <td>Rp {{ order.harga }}</td>
+          <td>$ {{ order.harga }}</td>
           <td>
             {% if order.status == "pending" %}
               <a href="{% url 'order:edit' order.ticket.id order.id %}" class="edit">Edit</a>
