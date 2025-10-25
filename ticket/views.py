@@ -58,7 +58,7 @@ def edit_ticket(request, id):
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 html = render_to_string("card_ticket.html", {"ticket": ticket}, request=request)
                 return JsonResponse({"updated": True, "html": html})
-            return redirect("ticket:show_tickets", match_id=ticket.event.match_id)
+            return redirect("ticket:show_tickets", match_id=event.match_id)
         else:
             if request.headers.get("x-requested-with") == "XMLHttpRequest":
                 return JsonResponse({"updated": False, "error": "Invalid data"})
