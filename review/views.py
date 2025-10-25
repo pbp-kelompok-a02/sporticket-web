@@ -151,20 +151,29 @@ def delete_review(request, match_id, review_id):
 def review_preview(request, match_id):
     try:
         event = get_object_or_404(Event, match_id=match_id)
-        reviews = event.reviews.order_by('-created_at')[:3]
+        # FIX: Use Review.objects.filter instead of event.reviews
+        reviews = Review.objects.filter(event=event).order_by('-created_at')[:3]
         
-        user_has_ticket = False
+        user_has_ticket = True
+        user_has_review = False  # Add this
+        
         if request.user.is_authenticated:
-            user_has_ticket = Order.objects.filter(
+            # user_has_ticket = Order.objects.filter(
+            #     user=request.user, 
+            #     ticket__event=event, 
+            #     status='confirmed'
+            # ).exists()
+            # Check if user already has a review
+            user_has_review = Review.objects.filter(
                 user=request.user, 
-                ticket__event=event, 
-                status='confirmed'
+                event=event
             ).exists()
             
         return render(request, 'review/review_preview.html', {
             'event': event, 
             'reviews': reviews, 
-            'user_has_ticket': user_has_ticket
+            'user_has_ticket': user_has_ticket,
+            'user_has_review': user_has_review  # Add this
         })
         
     except Exception as e:
@@ -177,20 +186,28 @@ def show_reviews(request, match_id):
         event = get_object_or_404(Event, match_id=match_id)
         print(f"Found event: {event}")
         
-        reviews = event.reviews.order_by('-created_at')
+        reviews = Review.objects.filter(event=event).order_by('-created_at')
         
         user_has_ticket = False
+        user_has_review = False 
+        
         if request.user.is_authenticated:
             user_has_ticket = Order.objects.filter(
                 user=request.user, 
                 ticket__event=event, 
                 status='confirmed'
             ).exists()
+            # Check if user already has a review
+            user_has_review = Review.objects.filter(
+                user=request.user, 
+                event=event
+            ).exists()
             
         return render(request, "review/review_detail.html", {
             'event': event, 
             'reviews': reviews, 
-            'user_has_ticket': user_has_ticket
+            'user_has_ticket': user_has_ticket,
+            'user_has_review': user_has_review
         })
         
     except Exception as e:

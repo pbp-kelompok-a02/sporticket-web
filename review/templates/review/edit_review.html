@@ -24,10 +24,7 @@
             {% for i in "12345" %}
             <button type="button" 
                     class="text-3xl edit-rating-star transition duration-200"
-                    data-rating="{{ forloop.counter }}"
-                    onmouseover="hoverEditStars('{{ forloop.counter }}')"
-                    onmouseout="resetEditStars()"
-                    onclick="setEditRating('{{ forloop.counter }}')">
+                    data-rating="{{ forloop.counter }}">
               ☆
             </button>
             {% endfor %}

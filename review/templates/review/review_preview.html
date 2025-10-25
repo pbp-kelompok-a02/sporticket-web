@@ -8,18 +8,24 @@
       <p class="text-gray-600 font-[Kanit]">{{ reviews.count }} Reviews</p>
     </div>
 
-    <!-- Add Review Button (only for users with confirmed tickets) -->
-    {% if user_has_ticket %}
+    <!-- Add Review Button (only for users with confirmed tickets AND no existing review) -->
+    {% if user_has_ticket and not user_has_review %}
     <div class="text-center mb-8">
       <button onclick="openAddModal('{{ event.match_id }}')"
               class="px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
         + Add Your Review
       </button>
     </div>
+    {% elif user_has_ticket and user_has_review %}
+    <div class="text-center mb-8">
+      <p class="text-gray-500 text-sm font-[Kanit] bg-gray-100 inline-block px-4 py-2 rounded-lg">
+        You have already submitted a review for this event
+      </p>
+    </div>
     {% endif %}
 
     <!-- Review Cards Grid -->
-    <div id="review-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div id="review-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" data-event-id="{{ event.match_id }}">
       {% for review in reviews %}
         {% include 'review/card_review.html' with review=review user=request.user %}
       {% empty %}
@@ -37,25 +43,20 @@
 
     <!-- Action Buttons -->
     <div class="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-      {% if user_has_ticket and reviews %}
       <a href="{% url 'review:list' event.match_id %}"
          class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
         <span>Show More Reviews</span>
       </a>
+      {% if user_has_ticket and reviews and not user_has_review %}      
       <button onclick="openAddModal('{{ event.match_id }}')"
               class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-green-600 text-white font-[Kanit] hover:bg-green-700 transition duration-200 font-semibold shadow-md">
         <span>+ Add Review</span>
       </button>
-      {% elif user_has_ticket %}
+      {% elif user_has_ticket and not user_has_review %}
       <button onclick="openAddModal('{{ event.match_id }}')"
               class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
         <span>+ Add First Review</span>
       </button>
-      {% else %}
-      <a href="{% url 'review:list' event.match_id %}"
-         class="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
-        <span>Show More Reviews</span>
-      </a>
       {% endif %}
     </div>
   </div>
@@ -64,5 +65,10 @@
 <!-- Modals -->
 {% include 'review/add_review.html' %}
 {% include 'review/edit_review.html' %}
+
+<script>
+// Add user_has_review to global scope
+window.userHasReview = '{{ user_has_review|yesno:"true,false" }}';
+</script>
 
 <script src="{% static 'review/review.js' %}"></script>

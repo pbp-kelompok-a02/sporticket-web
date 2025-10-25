@@ -1,8 +1,8 @@
 <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition duration-200" id="review-{{ review.id }}">
   <div class="flex items-center justify-between mb-4">
     <div class="flex items-center space-x-3">
-      <!-- User Avatar dengan link ke profil -->
-      <a href="{% url 'account:profile' review.user.id %}" class="flex-shrink-0">
+      <!-- User Avatar tanpa link -->
+      <div class="flex-shrink-0">
         {% if review.user.profile.profile_photo %}
           <img src="{{ review.user.profile.profile_photo.url }}" 
                alt="{{ review.user.username }}"
@@ -14,13 +14,12 @@
             </span>
           </div>
         {% endif %}
-      </a>
+      </div>
       <div>
-        <!-- Username dengan link ke profil -->
-        <a href="{% url 'account:profile' review.user.id %}" 
-           class="font-semibold text-gray-800 font-[Kanit] hover:text-[#537FB9] transition duration-200">
-          {{ review.user.username }}
-        </a>
+        <!-- Username tanpa link -->
+        <h3 class="font-semibold text-gray-800 font-[Kanit]">
+          {{ review.user.profile.name }}
+        </h3>
         <div class="flex items-center space-x-1">
           <div class="flex text-yellow-400">
             {% for i in "12345" %}
@@ -42,11 +41,11 @@
   
   {% if user == review.user %}
   <div class="flex space-x-2 justify-end">
-    <button onclick="openEditModal(`{{ review.id }}`, `{{ review.rating }}`, `{{ review.komentar|escapejs }}`)"
+    <button onclick="openEditModal('{{ review.id }}', '{{ review.rating }}', `{{ review.komentar|escapejs }}`)"
             class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition duration-200 font-[Kanit]">
       Edit
     </button>
-    <button onclick="deleteReview(`{{ event.match_id }}`, `{{ review.id }}`)"
+    <button onclick="deleteReview('{{ event.match_id }}', `{{ review.id }}`)"
             class="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200 transition duration-200 font-[Kanit]">
       Delete
     </button>

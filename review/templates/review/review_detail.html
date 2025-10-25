@@ -3,9 +3,29 @@
 
 {% block content %}
 
-<!-- Main Container dengan padding top untuk navbar dan full viewport height -->
-<div class="min-h-screen bg-gray-50 pt-20"> <!-- Added background and more top padding -->
-  <div class="max-w-2xl mx-auto py-8 px-4"> <!-- Reduced max-width to 2xl for better centering -->
+<!-- Debug Script -->
+<script>
+console.log('=== REVIEW DETAIL DEBUG ===');
+console.log('Event:', '{{ event.match_id }}');
+console.log('User has ticket:', '{{ user_has_ticket }}');
+console.log('Reviews count:', '{{ reviews.count }}');
+
+// Test if functions are available
+console.log('openAddModal available:', typeof openAddModal);
+console.log('showToast available:', typeof showToast);
+
+// Test modal element
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - checking modal elements:');
+    console.log('addReviewModal:', document.getElementById('addReviewModal'));
+    console.log('reviewEditModal:', document.getElementById('reviewEditModal'));
+});
+</script>
+
+<!-- Main Container -->
+ <header> Reviews </header>
+<div class="min-h-screen bg-gray-50 pt-20">
+  <div class="max-w-2xl mx-auto py-8 px-4">
     
     <!-- Header Section -->
     <div class="text-center mb-8">
@@ -18,7 +38,7 @@
     <!-- Add Review Button Section -->
     {% if user_has_ticket %}
     <div class="text-center mb-8">
-      <button onclick="openAddModal('{{ event.match_id }}')"
+      <button id="add-review-btn" data-event-id="{{ event.match_id }}"
               class="px-8 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
         + Add Your Review
       </button>
@@ -31,7 +51,7 @@
     </div>
     {% endif %}
 
-    <!-- Filter Buttons - Centered with equal width -->
+    <!-- Filter Buttons -->
     <div class="flex justify-center space-x-4 mb-8">
       <button id="filter-all"
               class="flex-1 max-w-[160px] px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-medium shadow-sm"
@@ -55,7 +75,38 @@
   </div>
 </div>
 
+<!-- Modals -->
+{% include 'review/add_review.html' %}
+{% include 'review/edit_review.html' %}
 
-<script src="{% static 'review/review.js' %}"></script>
+<!-- Load review.js with error handling -->
+<script src="{% static 'review/review.js' %}">
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    console.error('Error at:', e.filename, e.lineno, e.colno);
+});
+
+// Load review.js after ensuring no conflicts
+function loadReviewJS() {
+    console.log('Loading review.js...');
+    const script = document.createElement('script');
+    script.src = "{% static 'review/review.js' %}";
+    script.onload = function() {
+        console.log('review.js loaded successfully');
+        console.log('openAddModal now:', typeof openAddModal);
+    };
+    script.onerror = function() {
+        console.error('Failed to load review.js');
+    };
+    document.head.appendChild(script);
+}
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadReviewJS);
+} else {
+    loadReviewJS();
+}
+</script>
 
 {% endblock %}
