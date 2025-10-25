@@ -53,8 +53,6 @@
         {% if is_admin %}
         <br />
         <div class="flex space-x-3">
-          <a href="{% url 'event:edit_event' event.match_id %}" class="rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"> Edit Event </a>
-          <a href="{% url 'event:delete_event' event.match_id %}" class="rounded-lg bg-red-600 px-4 py-2 text-white transition-colors hover:bg-red-700" onclick="return confirm('Are you sure?');"> Delete Event </a>
           <br>
                 <div class="flex space-x-3">
                     <a href="{% url 'event:edit_event' event.match_id %}"
