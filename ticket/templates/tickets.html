@@ -70,13 +70,21 @@
 </div>
 
 <!-- Modal Edit Wrapper -->
-<div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-  <div id="editModalContent" class="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto p-4">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold">Edit Ticket</h3>
-      <button onclick="closeEditModal()" class="text-gray-500">✕</button>
+<div id="editModal"
+     class="hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+  <div id="editModalContent"
+       class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+              bg-white rounded-lg shadow-lg w-11/12 sm:w-3/5 md:w-1/2 lg:w-2/5 
+              max-h-[90vh] overflow-y-auto transition-all transform scale-100 opacity-100">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <h3 class="text-xl font-semibold text-gray-900">Edit Ticket</h3>
+      <button type="button" onclick="closeEditModal()" 
+              class="text-gray-400 hover:text-gray-700">
+        ✕
+      </button>
     </div>
-    <div id="editModalBody"></div>
+    <div id="editModalBody" class="p-6"></div>
   </div>
 </div>
 
@@ -116,7 +124,7 @@ async function refreshTickets() {
 
 // Delete ticket
 async function deleteTicket(id) {
-  const response = await fetch(`/ticket/tickets/${id}/delete/`, {
+  const response = await fetch(`/ticket/${id}/delete/`, {
     method: "POST",
     headers: {
       "X-CSRFToken": csrfToken
@@ -143,27 +151,67 @@ async function deleteTicket(id) {
   }
 }
 
-function openEditModal(ticketId, matchId) {
+function openEditTicketModal(ticketId, matchId) {
+  document.getElementById('editModalContent').addEventListener('click', e => {
+  e.stopPropagation(); // jangan tutup saat klik di dalam konten
+  });
+
   const modal = document.getElementById('editModal');
   const body = document.getElementById('editModalBody');
-
-  modal.classList.remove('hidden');
+  showEditModal();
   body.innerHTML = '<p class="p-4 text-gray-500">Loading form...</p>';
 
   fetch(`/ticket/${ticketId}/edit/`, {
-  method: 'GET',
-  headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    method: 'GET',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
   .then(response => response.text())
   .then(html => {
     body.innerHTML = html;
     const form = body.querySelector('form');
     if (form) {
-      form.addEventListener('submit', function(e) {
+      form.addEventListener('submit', e => {
         e.preventDefault();
         submitEditForm(ticketId, matchId, form);
       });
     }
+  });
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.add('hidden');
+}
+
+function showEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.remove('hidden');
+}
+
+function submitEditForm(ticketId, matchId, form) {
+  const formData = new FormData(form);
+
+  fetch(`/ticket/${ticketId}/edit/`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.updated) {
+      // ganti elemen card dengan versi update
+      const updatedCard = document.getElementById(`ticket-${ticketId}`);
+      if (updatedCard) {
+        updatedCard.innerHTML = data.html;
+      }
+      closeEditModal();
+    } else {
+      alert(data.error || "Update failed");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error updating ticket");
   });
 }
 

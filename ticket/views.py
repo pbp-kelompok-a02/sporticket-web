@@ -49,22 +49,22 @@ def create_ticket(request, match_id):
 @csrf_exempt
 def edit_ticket(request, id):
     ticket = get_object_or_404(Ticket, pk=id)
-    event = get_object_or_404(Event, match_id=ticket.event.match_id)
+    event = ticket.event
     form = TicketForm(request.POST or None, instance=ticket)
 
     if request.method == "POST":
         if form.is_valid():
             form.save()
-            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 html = render_to_string("card_ticket.html", {"ticket": ticket}, request=request)
                 return JsonResponse({"updated": True, "html": html})
             return redirect("ticket:show_tickets", match_id=event.match_id)
         else:
-            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse({"updated": False, "error": "Invalid data"})
 
     # === GET request for AJAX (show form in modal) ===
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         html = render_to_string(
             "edit_ticket.html",
             {"form": form, "ticket": ticket, "event": event},
@@ -74,7 +74,6 @@ def edit_ticket(request, id):
     else:
         # fallback jika dibuka langsung
         return render(request, "edit_ticket_page.html", {"form": form, "ticket": ticket, "event": event})
-
 
 @login_required
 @csrf_exempt
