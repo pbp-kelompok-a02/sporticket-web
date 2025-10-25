@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
           "X-CSRFToken": csrfToken
         },
         body: JSON.stringify({
-          event_id: parseInt(eventId),
+          event_id: eventId,
           category: category,
           price: parseFloat(price),
           stock: parseInt(stock)
