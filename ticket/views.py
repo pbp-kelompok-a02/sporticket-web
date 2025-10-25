@@ -49,14 +49,32 @@ def create_ticket(request, match_id):
 @csrf_exempt
 def edit_ticket(request, id):
     ticket = get_object_or_404(Ticket, pk=id)
+    event = get_object_or_404(Event, match_id=ticket.event.match_id)
     form = TicketForm(request.POST or None, instance=ticket)
 
-    if form.is_valid() and request.method == 'POST':
-        form.save()
-        return redirect('ticket:show_tickets')
-    
-    context = {'form': form, 'ticket': ticket}
-    return render(request, "edit_ticket.html", context)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                html = render_to_string("card_ticket.html", {"ticket": ticket}, request=request)
+                return JsonResponse({"updated": True, "html": html})
+            return redirect("ticket:show_tickets", match_id=ticket.event.match_id)
+        else:
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return JsonResponse({"updated": False, "error": "Invalid data"})
+
+    # === GET request for AJAX (show form in modal) ===
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        html = render_to_string(
+            "edit_ticket.html",
+            {"form": form, "ticket": ticket, "event": event},
+            request=request,
+        )
+        return HttpResponse(html)
+    else:
+        # fallback jika dibuka langsung
+        return render(request, "edit_ticket_page.html", {"form": form, "ticket": ticket, "event": event})
+
 
 @login_required
 @csrf_exempt
@@ -114,3 +132,24 @@ def add_ticket_ajax(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@csrf_exempt  
+@login_required
+@require_POST
+def edit_ticket_ajax(request, id):
+    try:
+        ticket = get_object_or_404(Ticket, pk=id)
+        data = json.loads(request.body)
+        
+        ticket.category = data.get('category', ticket.category)
+        ticket.price = data.get('price', ticket.price)
+        ticket.stock = data.get('stock', ticket.stock)
+        ticket.save()
+
+        html = render_to_string('card_ticket.html', {'ticket': ticket, 'user': request.user}, request=request)
+        # bungkus dengan id wrapper agar mudah replace
+        html = f'<div id="ticket-{ticket.id}">{html}</div>'
+
+        return JsonResponse({'updated': True, 'html': html})
+    except Exception as e:
+        return JsonResponse({'updated': False, 'error': str(e)}, status=400)
