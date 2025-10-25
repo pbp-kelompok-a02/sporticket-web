@@ -1,4 +1,7 @@
+{% extends 'base.html' %}
+{% include 'navbar.html' %}
 {% load static %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -138,9 +141,9 @@
     </div>
 
     <!-- Gambar kanan -->
-    <!-- <div class="stadium">
+    <div class="stadium">
       <img src="{% static 'order/images/oldTrafford.png' %}" alt="Stadium Map">
-    </div> -->
+    </div>
 
   </div>
 
@@ -170,3 +173,4 @@
 
 </body>
 </html>
+{% endblock content %}
