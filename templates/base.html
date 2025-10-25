@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% block meta %} {% endblock meta %}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <title>{% block title %}{{ app_title }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/design.css' %}">
+    <title>{% block title %}Sporticket{% endblock %}</title>
   </head>
   <body>
     {% if request.resolver_match.url_name != 'login' and request.resolver_match.url_name != 'register' %}
       {% include 'navbar.html' %}
     {% endif %}
 
-    <div class="container">
+    <div class="container-base">
       <main>
         {% block content %}{% endblock content %}
       </main>

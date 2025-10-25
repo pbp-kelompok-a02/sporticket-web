@@ -1,0 +1,19 @@
+body, html {
+    overflow-x: hidden;
+}
+
+.login-form input:focus, .login-form textarea:focus,
+.register-form input:focus, .register-form textarea:focus,
+.profile-form input:focus, .profile-form textarea:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: #537fb9;
+}
+
+.bg-login-image, .bg-register-image, .bg-profile-image {
+    background-image: url('/static/image/login-background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+}
