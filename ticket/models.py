@@ -30,7 +30,7 @@ class Ticket(models.Model):
 		if amount < 0:
 			raise ValueError('amount must be non-negative')
 		self.stock += int(amount)
-		self.save(update_fields=['stock', 'updated_at'])
+		self.save(update_fields=['stock'])
 
 	def decrease_stock(self, amount):
 		if amount < 0:
@@ -38,7 +38,7 @@ class Ticket(models.Model):
 		if amount > self.stock:
 			raise ValueError('insufficient stock')
 		self.stock -= int(amount)
-		self.save(update_fields=['stock', 'updated_at'])
+		self.save(update_fields=['stock'])
 
 	def reserve(self, quantity=1):
 		if self.is_available(quantity):
