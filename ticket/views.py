@@ -73,7 +73,7 @@ def edit_ticket(request, id):
         return HttpResponse(html)
     else:
         # fallback jika dibuka langsung
-        return render(request, "edit_ticket_page.html", {"form": form, "ticket": ticket, "event": event})
+        return render(request, "edit_ticket.html", {"form": form, "ticket": ticket, "event": event})
 
 @login_required
 @csrf_exempt

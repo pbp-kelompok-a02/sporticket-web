@@ -78,7 +78,7 @@ class TicketViewTest(TestCase):
         self.assertIn("ticket_list", response.context)
 
     def test_create_ticket_valid_post(self):
-        url = reverse("ticket:create_ticket")
+        url = reverse("ticket:create_ticket", args=[self.event.match_id])
         data = {
             "category": Ticket.CATEGORY_REGULAR,
             "price": 50.0,
@@ -89,7 +89,7 @@ class TicketViewTest(TestCase):
         self.assertTrue(Ticket.objects.filter(category=Ticket.CATEGORY_REGULAR).exists())
 
     def test_create_ticket_get(self):
-        url = reverse("ticket:create_ticket")
+        url = reverse("ticket:create_ticket", args=[self.event.match_id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "create_ticket.html")
@@ -104,7 +104,7 @@ class TicketViewTest(TestCase):
         url = reverse("ticket:edit_ticket", args=[self.ticket.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "edit_ticket_page.html")
+        self.assertTemplateUsed(response, "edit_ticket.html")
 
     def test_edit_ticket_post_valid_ajax(self):
         url = reverse("ticket:edit_ticket", args=[self.ticket.id])
