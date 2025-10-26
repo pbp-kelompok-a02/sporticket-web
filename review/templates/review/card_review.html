@@ -1,40 +1,63 @@
-<div class="bg-white shadow rounded-lg p-4 mb-3 border border-gray-100 font-[Kanit]" id="review-{{ review.id }}">
-    
-    <div class="flex items-start space-x-3 mb-3">
-        <div class="flex-shrink-0">
-            <div class="flex items-center justify-center h-10 w-10 rounded-full bg-[#537FB9] text-white font-bold">
-                {{ review.user.username|first|upper }}
-            </div>
+<div class="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition duration-200" id="review-{{ review.id }}">
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center space-x-3">
+      <!-- User Avatar TANPA link -->
+      <a href="{% url 'account:profile_detail' review.user.id %}" class="flex-shrink-0" title="View profile">
+        {% if review.user.profile.profile_photo %}
+          <img src="{{ review.user.profile.profile_photo.url }}" 
+               alt="{{ review.user.username }}"
+               class="w-10 h-10 rounded-full object-cover border-2 border-[#537FB9]">
+        {% else %}
+          <div class="w-10 h-10 bg-[#537FB9] rounded-full flex items-center justify-center">
+            <span class="text-white font-semibold text-sm">
+              {{ review.user.username|first|upper }}
+            </span>
+          </div>
+        {% endif %}
+      </a>
+      <div>
+        <div class="font-semibold text-gray-800 font-[Kanit]">
+          {% with profile=review.user.profile %}
+            {% if profile %}
+              <a href="{% url 'account:profile_detail' review.user.id %}" class="hover:underline text-inherit">
+                {{ profile.name|default:review.user.username }}
+              </a>
+            {% else %}
+              <a href="{% url 'account:profile_detail' review.user.id %}" class="hover:underline text-inherit">
+                {{ review.user.username }}
+              </a>
+            {% endif %}
+          {% endwith %}
         </div>
-        
-        <div class="flex-grow">
-            <p class="font-semibold text-gray-800">{{ review.user.username }}</p>
-            <div class="flex items-center space-x-2 text-sm text-gray-500">
-                <div class="flex text-yellow-500">
-                    {% for i in "12345" %}
-                        {% if forloop.counter <= review.rating %}
-                            <span>★</span>
-                        {% else %}
-                            <span class="text-gray-300">★</span>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                <span class="text-gray-400">·</span>
-                <p class="text-sm text-gray-400">{{ review.created_at|date:"d M Y" }}</p>
-            </div>
+        <div class="flex items-center space-x-1">
+          <div class="flex text-yellow-400">
+            {% for i in "12345" %}
+              {% if forloop.counter <= review.rating %}
+                <span>★</span>
+              {% else %}
+                <span class="text-gray-300">★</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <span class="text-sm text-gray-500 ml-2">{{ review.rating }}/5</span>
         </div>
+      </div>
     </div>
-    
-    <p class="text-gray-700">{{ review.komentar }}</p>
-
-    {% if user == review.user %}
-    <div class="flex gap-2">
-      <button onclick="openEditModal(this)"
-              data-review-id="{{ review.id }}"
-              data-review-rating="{{ review.rating }}"
-              data-review-komentar="{{ review.komentar|escapejs }}"
-              class="px-2 py-1 bg-gray-100 rounded text-sm">Edit</button>
-      <button onclick="deleteReview('{{ review.id }}')" class="px-2 py-1 bg-red-100 rounded text-sm">Delete</button>
-    </div>
-    {% endif %}
+    <span class="text-sm text-gray-500">{{ review.created_at|date:"M d, Y" }}</span>
+  </div>
+  
+  <p class="text-gray-700 mb-4">{{ review.komentar }}</p>
+  
+  {% if user == review.user %}
+    <div class="flex space-x-2 justify-end">
+    <button onclick="openEditModalReview('{{ review.id }}', '{{ review.rating }}', `{{ review.komentar|escapejs }}`)"
+            class="px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition duration-200 font-[Kanit]">
+      Edit
+    </button>
+    <button onclick="deleteReview('{{ event.match_id }}', '{{ review.id }}')"
+            class="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200 transition duration-200 font-[Kanit]">
+      Delete
+    </button>
+  </div>
+  {% endif %}
 </div>

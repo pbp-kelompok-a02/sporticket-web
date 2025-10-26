@@ -3,43 +3,96 @@
 
 {% block content %}
 
-<div class="max-w-3xl mx-auto py-8 px-4">
-  <h1 class="text-3xl font-bold text-gray-800 mb-6 font-[Kanit]">
-    {{ event.name }} Reviews
-  </h1>
 
-  {% if user_has_ticket %}
-  <div class="mb-4">
-      <button onclick="openAddModal('{{ event.id }}')"
-              class="w-full px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]">
-              Add Your Review
+<!-- Main Container -->
+<div class="min-h-screen bg-gray-50 pt-20">
+  <div class="max-w-2xl mx-auto py-2 px-4">
+    <!-- Back button -->
+    <div class="mb-4">
+      <a href="{% url 'event:event_detail' event.match_id %}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back
+      </a>
+    </div>
+    <div class="py-6">
+    
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2 font-[Kanit]">
+        {{ event.name }} Reviews
+      </h1>
+  <p class="text-gray-600 font-[Kanit]">{{ reviews|length }} Reviews</p>
+    </div>
+
+    <!-- Add Review Button Section -->
+    {% if user_has_ticket %}
+    <div class="text-center mb-8">
+      <button id="add-review-btn" data-event-id="{{ event.match_id }}"
+              class="px-8 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-semibold shadow-md">
+        + Add Your Review
       </button>
+    </div>
+    {% else %}
+    <div class="text-center mb-8">
+      <p class="text-gray-500 text-sm font-[Kanit] bg-gray-100 inline-block px-4 py-2 rounded-lg">
+        You need to have a confirmed ticket to add a review
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Filter Buttons -->
+    <div class="flex justify-center space-x-4 mb-8">
+      <button id="filter-all"
+              class="flex-1 max-w-[160px] px-6 py-3 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798] transition duration-200 font-medium shadow-sm"
+              data-filter="all">
+        All Reviews
+      </button>
+      {% if user.is_authenticated %}
+      <button id="filter-my"
+              class="flex-1 max-w-[160px] px-6 py-3 rounded-lg bg-gray-200 text-[#537FB9] font-[Kanit] hover:bg-gray-300 transition duration-200 font-medium shadow-sm"
+              data-filter="my">
+        My Reviews
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Review List Container -->
+    <div id="review-list-container" 
+         data-event-id="{{ event.match_id }}" 
+         class="space-y-6 w-full">
+      {% include 'review/partials/review_list.html' with reviews=reviews user=request.user %}
+    </div>
+
   </div>
-  {% endif %}
-
-    <div class="flex gap-3 mb-4">
-    <button id="filter-all"
-            class="px-4 py-2 rounded-lg bg-[#537FB9] text-white font-[Kanit] hover:bg-[#3e6798]"
-            data-filter="all">
-      All Reviews
-    </button>
-    <button id="filter-my"
-            class="px-4 py-2 rounded-lg bg-gray-200 text-[#537FB9] font-[Kanit] hover:bg-[#e0e7ef]"
-            data-filter="my">
-      My Reviews
-    </button>
-  </div>
-
-    <div id="review-list-container" data-event-id="{{ event.id }}" class="space-y-4">
-    {% include 'review/partials/review_list.html' with reviews=reviews user=request.user %}
-  </div>
-
-
 </div>
 
+<!-- Modals -->
 {% include 'review/add_review.html' %}
 {% include 'review/edit_review.html' %}
 
-<script src="{% static 'review.js' %}"></script>
+<!-- Provide JS globals for review.js -->
+<script>
+  window.userHasReview = '{% if user_has_review %}true{% else %}false{% endif %}';
+  window.userHasTicket = '{% if user_has_ticket %}true{% else %}false{% endif %}';
+  window.eventMatchId = '{{ event.match_id }}';
+
+  window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
+    console.error('Error at:', e.filename, e.lineno, e.colno);
+  });
+
+  // Dynamically load review.js (keeps previous behavior but ensures globals are set first)
+  (function loadReviewJS() {
+    const script = document.createElement('script');
+    script.src = "{% static 'review/review.js' %}";
+    script.onload = function() {
+      console.log('review.js loaded successfully');
+    };
+    script.onerror = function() {
+      console.error('Failed to load review.js');
+    };
+    document.head.appendChild(script);
+  })();
+</script>
 
 {% endblock %}

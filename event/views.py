@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.html import strip_tags
 from django.views.decorators.csrf import csrf_exempt
 from review.models import Review
+from order.models import Order
 from django.db.models import Avg, Count
 from event.models import Event
 from event.forms import EventForm
@@ -43,17 +44,49 @@ def add_event(request):
 
 def event_detail(request, match_id):
     event = get_object_or_404(Event, match_id=match_id)
+    # Provide both an aggregate and a full queryset for reviews.
+    # The included template `review/review_preview.html` expects `reviews` to be
+    # an iterable queryset (so it can slice/loop and get correct length), while
+    # other parts of this view might want aggregates.
+    reviews_qs = Review.objects.filter(event=event).select_related('user', 'user__profile').order_by('-created_at')
+    reviews_agg = reviews_qs.aggregate(avg_rating=Avg('rating'), total_reviews=Count('id'))
 
-    reviews = Review.objects.filter(event=event).aggregate(avg_rating=Avg('rating'),
-                                                           total_reviews=Count('id'))
     user_review = None
+    user_has_ticket = False
+    user_has_review = False
+
     if request.user.is_authenticated:
         user_review = Review.objects.filter(event=event, user=request.user).first()
+        # Check whether the user has a confirmed ticket for this event.
+        try:
+            # Use the user's related orders manager to avoid any potential
+            # cross-app model resolution issues and to be explicit about the owner.
+            user_has_ticket = request.user.orders.filter(
+                ticket__event=event,
+                status='confirmed'
+            ).exists()
+        except Exception:
+            # If the Order lookup fails for any reason, default to False
+            user_has_ticket = False
+
+        user_has_review = Review.objects.filter(event=event, user=request.user).exists()
+
+        # Debug prints to the server console to help during development
+        print(f"DEBUG event_detail - User: {request.user.username}")
+        print(f"DEBUG event_detail - Has ticket: {user_has_ticket}")
+        print(f"DEBUG event_detail - Has review: {user_has_review}")
+        print(f"DEBUG event_detail - Reviews count: {reviews_qs.count()}")
+
     context = {
         'event': event,
-        'reviews': reviews,
+        # Expose a queryset named `reviews` so the included preview template works.
+        'reviews': reviews_qs,
+        # Also provide aggregates under a different name in case other logic needs it.
+        'reviews_agg': reviews_agg,
         'user_review': user_review,
         'is_admin': request.user.is_superuser,
+        'user_has_ticket': user_has_ticket,
+        'user_has_review': user_has_review,
     }
     return render(request, 'event_detail.html', context)
 
