@@ -1,15 +1,26 @@
+
+
 from django.db import models
 
 
 class Event(models.Model):
+	CATEGORY = [
+		('badminton', 'Badminton'),
+		('football', 'Football'),
+		('basketball', 'Basketball'),
+		('tennis', 'Tennis'),
+		('volleyball', 'Volleyball'),
+	]
+	match_id = models.CharField(max_length=100, unique=True, default='')
 	name = models.CharField(max_length=255)
 	home_team = models.CharField(max_length=255)
 	away_team = models.CharField(max_length=255)
 	description = models.TextField(blank=True)
-	poster = models.ImageField(upload_to='events/posters/', blank=True, null=True)
+	poster = models.URLField(blank=True, null=True)
 	venue = models.CharField(max_length=255)
 	date = models.DateTimeField()
 	capacity = models.PositiveIntegerField(default=0)
+	category = models.CharField(max_length=20, choices=CATEGORY, default='football')
 
 	class Meta:
 		ordering = ['-date', 'name']

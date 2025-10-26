@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>SPORTICKET - Ticket</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+{% include 'create_ticket.html' %}
+
+<div class="bg-gray-50 w-full pt-16 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Header Section -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Sport Match</h1>
+      <p class="text-gray-600">Stay updated with the latest Sport Match</p>
+    </div>
+
+    <!-- CEK USER ATAU ADMIN -->
+    {% if user.is_superuser %}
+      <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-white text-[#537FB9] font-semibold outline outline-2 outline-[#537FB9] outline-offset-[-2px] rounded-md hover:bg-[#537FFF] hover:text-white transition-colors mb-4">
+        Create Ticket
+      </button>
+    {% endif %}
+
+    <!-- Ticket Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-w-6xl mx-auto">
+        <div class="flex justify-center items.center9">
+            {% if event.category == 'badminton' %}
+              <img src="{% static 'image/badminton.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+            {% elif event.category == 'football' %}
+              <div class="h-[600px] flex items-center">
+                <img src="{% static 'image/football.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain">
+              </div>
+              
+            {% elif event.category == 'basketball' %}
+              <img src="{% static 'image/basketball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+            {% elif event.category == 'volleyball' %}
+              <img src="{% static 'image/volleyball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+            {% elif event.category == 'tennis' %}
+              <img src="{% static 'image/tennis.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+            {% endif %}
+        </div>
+
+        <div class="flex flex-col justify-center items-center h-[600px] overflow-y-auto">
+          <div id="loading" class="text-center text-gray-500 py-4 hidden">
+            Loading tickets...
+          </div>
+          <div id="ticket-container" class="flex flex-col space-y-3 w-full">
+            {% if ticket_list %}
+            {% for ticket in ticket_list %}
+              <div id="ticket-{{ ticket.id }}">
+                {% include 'card_ticket.html' with ticket=ticket %}
+              </div>
+            {% endfor %}
+            {% else %}
+              <div id="no-ticket" class="flex flex-col items-center">
+                <img src="{% static 'image/no-ticket.png' %}" class="rounded-xl w-full max-w-md object-contain h-[100px]">
+                <div class="bg-transparent rounded-lg p-6 text-center">
+                  <h3 class="text-lg font-medium text-gray-900 mb-2">No ticket found</h3>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+  </div>
+</div>
+
+<!-- Modal Edit Wrapper -->
+<div id="editModal"
+     class="hidden fixed inset-0 z-50 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+  <div id="editModalContent"
+       class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+              bg-white rounded-lg shadow-lg w-11/12 sm:w-3/5 md:w-1/2 lg:w-2/5 
+              max-h-[90vh] overflow-y-auto transition-all transform scale-100 opacity-100">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <h3 class="text-xl font-semibold text-gray-900">Edit Ticket</h3>
+      <button type="button" onclick="closeEditModal()" 
+              class="text-gray-400 hover:text-gray-700">
+        ✕
+      </button>
+    </div>
+    <div id="editModalBody" class="p-6"></div>
+  </div>
+</div>
+
+
+<script>
+const csrfToken = '{{ csrf_token }}';
+// Refresh ticket list
+async function refreshTickets() {
+  const loading = document.getElementById("loading");
+  const container = document.getElementById("ticket-container");
+
+  loading.classList.remove("hidden");
+  container.innerHTML = "";
+
+  try {
+    const response = await fetch("{% url 'ticket:show_json' %}");
+    const tickets = await response.json();
+
+    loading.classList.add("hidden");
+
+    if (tickets.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white rounded-lg border border-gray-200 p-6 text-center">
+          No ticket found
+        </div>
+      `;
+      return;
+    }
+
+    tickets.forEach(ticket => {
+      container.innerHTML += ticket.html;
+    });
+  } catch (err) {
+    loading.textContent = "Failed to load tickets 😢";
+  }
+}
+
+// Delete ticket
+async function deleteTicket(id) {
+  const response = await fetch(`/ticket/${id}/delete/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken
+    }
+  });
+
+  if (response.ok) {
+    const el = document.getElementById(`ticket-${id}`);
+    if (el) el.remove();
+
+    const container = document.getElementById("ticket-container");
+    if (container.children.length === 0) {
+      container.innerHTML = `
+        <div id="no-ticket" class="flex flex-col items-center">
+          <img src="{% static 'image/no-ticket.png' %}" class="rounded-xl w-full max-w-md object-contain h-[100px]">
+          <div class="bg-transparent rounded-lg p-6 text-center">
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No ticket found</h3>
+          </div>
+        </div>
+      `;
+    }
+  } else {
+    alert("Failed to delete ticket!");
+  }
+}
+
+function openEditTicketModal(ticketId, matchId) {
+  document.getElementById('editModalContent').addEventListener('click', e => {
+  e.stopPropagation(); // jangan tutup saat klik di dalam konten
+  });
+
+  const modal = document.getElementById('editModal');
+  const body = document.getElementById('editModalBody');
+  showEditModal();
+  body.innerHTML = '<p class="p-4 text-gray-500">Loading form...</p>';
+
+  fetch(`/ticket/${ticketId}/edit/`, {
+    method: 'GET',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(response => response.text())
+  .then(html => {
+    body.innerHTML = html;
+    const form = body.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        submitEditForm(ticketId, matchId, form);
+      });
+    }
+  });
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.add('hidden');
+}
+
+function showEditModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.remove('hidden');
+}
+
+function submitEditForm(ticketId, matchId, form) {
+  const formData = new FormData(form);
+
+  fetch(`/ticket/${ticketId}/edit/`, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.updated) {
+      // ganti elemen card dengan versi update
+      const updatedCard = document.getElementById(`ticket-${ticketId}`);
+      if (updatedCard) {
+        updatedCard.innerHTML = data.html;
+      }
+      closeEditModal();
+    } else {
+      alert(data.error || "Update failed");
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Error updating ticket");
+  });
+}
+
+// Add new ticket via AJAX
+function showModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modal.classList.remove('hidden'); 
+  setTimeout(() => {
+    modalContent.classList.remove('opacity-0', 'scale-95');
+    modalContent.classList.add('opacity-100', 'scale-100');
+  }, 50); 
+}
+
+function hideModal() {
+  const modal = document.getElementById('crudModal');
+  const modalContent = document.getElementById('crudModalContent');
+  modalContent.classList.remove('opacity-100', 'scale-100');
+  modalContent.classList.add('opacity-0', 'scale-95');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 150); 
+}
+
+// Event delegation: karena modal hidden, listener dipasang di document
+document.addEventListener('DOMContentLoaded', () => {
+  const submitBtn = document.getElementById('submitNews'); // ambil tombol submit
+
+  submitBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+
+    const eventId = document.getElementById("event").value;
+    const category = document.getElementById("category").value;
+    const price = document.getElementById("price").value;
+    const stock = document.getElementById("stock").value;
+
+    if (!category || !price || !stock) return alert("Please fill all fields");
+
+    try {
+      const response = await fetch("{% url 'ticket:add_ticket_ajax' %}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+          category: category,
+          price: parseFloat(price),
+          stock: parseInt(stock)
+        })
+      });
+
+      if (response.ok) {
+        const newTicket = await response.json();
+        if (newTicket.error) {
+          alert("Server error: " + newTicket.error);
+          return;
+        }
+        const container = document.getElementById("ticket-container");
+
+        const noTicket = document.getElementById("no-ticket");
+        if (noTicket) {
+          noTicket.remove();
+        }
+
+        container.insertAdjacentHTML('afterbegin', newTicket.html);
+
+        hideModal();
+        document.getElementById("newsForm").reset();
+
+      } else {
+        const errData = await response.json().catch(()=>({}));
+        alert("Failed to create ticket: " + (errData.error || response.statusText));
+      }
+    } catch(err) {
+      console.error(err);
+      alert("Error creating ticket");
+    }
+  });
+});
+</script>
+{% endblock content %}

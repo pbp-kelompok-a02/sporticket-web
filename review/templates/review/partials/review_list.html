@@ -1,0 +1,5 @@
+{% for review in reviews %}
+    {% include "review/card_review.html" with review=review user=user %}
+{% empty %}
+    <p class="text-gray-500 font-[Kanit]">Tidak ada review yang cocok.</p>
+{% endfor %}

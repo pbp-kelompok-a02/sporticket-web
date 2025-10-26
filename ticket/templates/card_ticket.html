@@ -1,0 +1,49 @@
+{% load static %}
+<article class="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+  <!-- Thumbnail -->
+  <div class="h-32 bg-gray-100 relative overflow-hidden flex items-center justify-center">
+
+    <!-- Category Badge -->
+    <div class="absolute top-3 left-3">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#537FB9] text-white">
+        {{ ticket.category }}
+      </span>
+    </div>
+    <span class="text-gray-400 text-sm">No image</span>
+  </div>
+
+  <!-- Content -->
+  <div class="p-5">
+    <h3 class="text-3xl font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+      <a href="" class="hover:text-green-600 transition-colors">
+        <span>$</span>{{ ticket.price }}
+      </a>
+    </h3>
+
+    <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">
+      {{ ticket.event.name }}
+    </p>
+
+    <!-- Action Buttons -->
+    <!-- UBAH UNTUK CEK ADMIN/USER -->
+      <div class="flex flex-col items-end pt-4 border-t border-gray-100">
+        <div class="flex space-x-2">
+          {% if user.is_superuser %}
+            <button onclick="openEditTicketModal('{{ ticket.id }}', '{{ ticket.event.match_id }}')" 
+                    class="text-gray-600 hover:text-gray-700 text-sm transition-colors">
+              Edit
+            </button>
+            <button onclick="deleteTicket('{{ ticket.id }}')" 
+                    class="text-red-600 hover:text-red-700 text-sm transition-colors">
+              Delete
+            </button>
+          {% else %}
+            <a href="{% url 'order:create' ticket.id %}" 
+               class="inline-flex items-center px-3 py-1 bg-[#537fb9] text-white rounded-md text-sm hover:bg-[#3b5998] transition-colors">
+              Buy Ticket
+            </a>
+          {% endif %}
+        </div>
+      </div>
+  </div>
+</article>
