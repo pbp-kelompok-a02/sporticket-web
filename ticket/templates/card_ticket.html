@@ -19,15 +19,19 @@
     <div class="relative group">
       {% if ticket.category == 'VIP' %}
         <div class="flex items-center justify-center absolute w-full h-full bg-white top-0 z-30 opacity-0 transition duration-150 hover:opacity-50 hover:cursor-pointer">
-          <p class="font-bold text-9xl text-transparent bg-clip-text bg-black ">
-            VIP
-          </p>
+          <a href="{% url 'order:create' ticket.id %}" class="flex items-center justify-center w-full h-full">
+            <p class="font-bold text-9xl text-transparent bg-clip-text bg-black ">
+              VIP
+            </p>
+          </a>
         </div>
       {% else %}
         <div class="flex items-center justify-center absolute w-full h-full bg-white top-0 z-30 opacity-0 transition duration-150 hover:opacity-50 hover:cursor-pointer">
-          <p class="font-bold text-9xl text-transparent bg-clip-text bg-black ">
-            REG
-          </p>
+          <a href="{% url 'order:create' ticket.id %}" class="flex items-center justify-center w-full h-full">  
+            <p class="font-bold text-9xl text-transparent bg-clip-text bg-black ">
+              REG
+            </p>
+          </a>
         </div>
       {% endif %}
 
@@ -99,9 +103,10 @@
               Delete
             </button>
           {% else %}
-            <button>
+            <a href="{% url 'order:create' ticket.id %}" 
+               class="inline-flex items-center px-3 py-1 bg-[#537fb9] text-white rounded-md text-sm hover:bg-[#3b5998] transition-colors">
               Buy Ticket
-            </button>
+            </a>
           {% endif %}
         </div>
       </div>
