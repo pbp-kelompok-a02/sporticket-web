@@ -13,9 +13,29 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <!-- Header Section -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Sport Match</h1>
-      <p class="text-gray-600">Stay updated with the latest Sport Match</p>
+    <div class="mb-8 mr-8">
+      {% if event.category == 'badminton' %}
+        <img src="{% static 'image/banner_badminton.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_40%] z-0">
+      {% elif event.category == 'football' %}
+        <img src="{% static 'image/banner_football.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover z-0">
+      {% elif event.category == 'basketball' %}
+        <img src="{% static 'image/banner_basketball.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_35%] z-0">
+      {% elif event.category == 'volleyball' %}
+        <img src="{% static 'image/banner_volleyball.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_65%] z-0">
+      {% elif event.category == 'tennis' %}
+        <img src="{% static 'image/banner_tennis.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_30%] z-0">
+      {% endif %}
+
+      <h1 class="relative text-3xl text-white ml-5 mb-2 z-10">{{ event.name }}</h1>
+      <p class="relative text-4xl font-bold text-white ml-5 mb-3 z-10"><span class="text-blue-600">{{ event.home_team }}</span> vs <span class="text-red-600">{{ event.away_team }}</span></p>
+      <div class="relative flex gap-2 z-10 ml-5">
+        <img src="{% static 'image/date-icon.png' %}" class="w-5 h-5">
+        <p class="text-white">{{ event.date }}</p>
+      </div>
+      <div class="relative flex gap-2 z-10 ml-5">
+        <img src="{% static 'image/location-icon.png' %}" class="w-5 h-5">
+        <p class="text-white">{{ event.venue }}</p>
+      </div>
     </div>
 
     <!-- CEK USER ATAU ADMIN -->
@@ -26,25 +46,42 @@
     {% endif %}
 
     <!-- Ticket Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start max-w-6xl mx-auto">
-        <div class="flex justify-center items.center9">
+      <div class="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 items-start max-w-6xl mx-auto">
+        <div class="flex justify-center items.center9 bg-white rounded-xl shadow-md">
             {% if event.category == 'badminton' %}
-              <img src="{% static 'image/badminton.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
-            {% elif event.category == 'football' %}
-              <div class="h-[600px] flex items-center">
-                <img src="{% static 'image/football.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain">
+              <div class="w-full flex-col justify-center items-center">
+                <p class="text-3xl text-gray-900 font-bold mb-2 mt-6 mx-6">SEATING PLAN</p>
+                <img src="{% static 'image/badminton.png' %}" class="mx-6 rounded-xl shadow-md object-contain w-xs md:w-11/12 lg:w-md xl:w-lg">
+                <p class="text-gray-600 pr-10 mx-10 mt-2 mb-6">The seating plan above shows the arrangement of seats for this event. Please check your ticket category (VIP or Regular) to locate your designated area.</p>
               </div>
-              
+            {% elif event.category == 'football' %}
+              <div class="w-full flex-col justify-center items-center">
+                <p class="text-3xl text-gray-900 font-bold mb-2 mt-6 mx-6">SEATING PLAN</p>
+                <img src="{% static 'image/football.png' %}" class="mx-6 rounded-xl shadow-md object-contain w-xs md:w-11/12 lg:w-md xl:w-lg">
+                <p class="text-gray-600 pr-10 mx-10 mt-2 mb-6">The seating plan above shows the arrangement of seats for this event. Please check your ticket category (VIP or Regular) to locate your designated area.</p>
+              </div>
             {% elif event.category == 'basketball' %}
-              <img src="{% static 'image/basketball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+              <div class="w-full flex-col justify-center items-center">
+                <p class="text-3xl text-gray-900 font-bold mb-2 mt-6 mx-6">SEATING PLAN</p>
+                <img src="{% static 'image/basketball.png' %}" class="mx-6 rounded-xl shadow-md object-contain w-xs md:w-11/12 lg:w-md xl:w-lg">
+                <p class="text-gray-600 pr-10 mx-10 mt-2 mb-6">The seating plan above shows the arrangement of seats for this event. Please check your ticket category (VIP or Regular) to locate your designated area.</p>
+              </div>
             {% elif event.category == 'volleyball' %}
-              <img src="{% static 'image/volleyball.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+              <div class="w-full flex-col justify-center items-center">
+                <p class="text-3xl text-gray-900 font-bold mb-2 mt-6 mx-6">SEATING PLAN</p>
+                <img src="{% static 'image/volleyball.png' %}" class="mx-6 rounded-xl shadow-md object-contain w-xs md:w-11/12 lg:w-md xl:w-lg">
+                <p class="text-gray-600 pr-10 mx-10 mt-2 mb-6">The seating plan above shows the arrangement of seats for this event. Please check your ticket category (VIP or Regular) to locate your designated area.</p>
+              </div>
             {% elif event.category == 'tennis' %}
-              <img src="{% static 'image/tennis.png' %}" class="rounded-xl shadow-md w-full max-w-md object-contain h-[600px]">
+              <div class="w-full flex-col justify-center items-center">
+                <p class="text-3xl text-gray-900 font-bold mb-2 mt-6 mx-6">SEATING PLAN</p>
+                <img src="{% static 'image/tennis.png' %}" class="mx-6 rounded-xl shadow-md object-contain w-xs md:w-11/12 lg:w-md xl:w-lg">
+                <p class="text-gray-600 pr-10 mx-10 mt-2 mb-6">The seating plan above shows the arrangement of seats for this event. Please check your ticket category (VIP or Regular) to locate your designated area.</p>
+              </div>
             {% endif %}
         </div>
 
-        <div class="flex flex-col justify-center items-center h-[600px] overflow-y-auto">
+        <div class="overflow-y-auto max-h-[600px]">
           <div id="loading" class="text-center text-gray-500 py-4 hidden">
             Loading tickets...
           </div>
