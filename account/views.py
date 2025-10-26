@@ -134,7 +134,9 @@ def profile_view(request, user_id=None):
     viewer_role = getattr(viewer_profile, 'role', None) if viewer_profile else None
 
     is_own_profile = (viewer is not None and viewer.pk == target_user.pk)
-    is_admin_viewer = (viewer is not None and viewer_role == 'Admin')
+    is_admin_viewer = False
+    if viewer is not None:
+        is_admin_viewer = viewer.is_superuser or (viewer_role == 'Admin')
 
     context = {
         'profile_user': target_user,

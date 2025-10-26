@@ -32,11 +32,7 @@
               {% if is_own_profile %}
                 Your Personal Account
               {% else %}
-                {% if is_admin_viewer %}
-                  Admin Viewing User Profile
-                {% else %}
-                  User Profile
-                {% endif %}
+                User Profile
               {% endif %}
             </p>
           </div>
@@ -95,7 +91,7 @@
                 Account Details              
             </h3>
 
-            {% if can_see_sensitive_data %}
+            {% if can_see_sensitive_data or user.is_superuser %}
               <div>
                 <label class="block text-sm font-medium text-gray-500">Email Address</label>
                 <p class="text-gray-900 text-lg" data-profile-email>{{ profile_user.email }}</p>
