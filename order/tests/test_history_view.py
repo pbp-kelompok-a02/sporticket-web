@@ -90,3 +90,52 @@ class OrderHistoryViewTests(TestCase):
         resp = self.client.get(self.history_url)
         # shouldn't show other user's orders
         self.assertNotContains(resp, "other@example.com")
+    def test_cancel_order_ajax_pending_success(self):
+        """Pending order cancelled via AJAX should return JSON success."""
+        self.login()
+        order = Order.objects.create(
+            user=self.user,
+            ticket=self.ticket_reg,
+            quantity=1,
+            status=Order.STATUS_PENDING,
+            harga=100,
+        )
+
+        url = reverse("order:cancel_ajax", args=[order.id])
+        resp = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data.get("success"))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_CANCELLED)
+
+    def test_cancel_order_ajax_confirmed_success(self):
+        """Confirmed order cancelled via AJAX should return JSON success."""
+        self.login()
+        order = Order.objects.create(
+            user=self.user,
+            ticket=self.ticket_vip,
+            quantity=1,
+            status=Order.STATUS_CONFIRMED,
+            harga=250,
+        )
+
+        url = reverse("order:cancel_ajax", args=[order.id])
+        resp = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data.get("success"))
+
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_CANCELLED)
+
+    def test_cancel_order_ajax_invalid_order(self):
+        """Invalid order id should return error JSON."""
+        self.login()
+        url = reverse("order:cancel_ajax", args=[999])  # non-existent
+        resp = self.client.post(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+
+        self.assertEqual(resp.status_code, 404)

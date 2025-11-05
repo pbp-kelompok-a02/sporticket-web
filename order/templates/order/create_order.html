@@ -142,7 +142,7 @@
             {% for t in ticket.event.tickets.all %}
               <option value="{{ t.id }}"
                 {% if order and t.id == order.ticket.id %}selected{% endif %}>
-                {{ t.get_category_display }} — $ {{ t.price }} (Tersisa: {{ t.stock }})
+                {{ t.get_category_display }} — $ {{ t.price }} (Ticket left: {{ t.stock }})
               </option>
             {% endfor %}
           </select>
@@ -190,7 +190,7 @@
     function updatePriceAndStock() {
       const selectedOption = select.options[select.selectedIndex];
   const priceMatch = selectedOption.textContent.match(/\$\s*([0-9.,]+)/);
-  const stockMatch = selectedOption.textContent.match(/Tersisa: (\d+)/);
+  const stockMatch = selectedOption.textContent.match(/Ticket left: (\d+)/);
       priceDisplay.textContent = priceMatch ? priceMatch[1] : "x";
       stockDisplay.textContent = stockMatch ? stockMatch[1] : "x";
     }
@@ -201,7 +201,7 @@
     form.addEventListener('submit', function(event) {
       const qty = parseInt(document.getElementById('id_quantity').value);
       const selectedOption = select.options[select.selectedIndex];
-      const stockText = selectedOption.textContent.match(/Tersisa: (\d+)/);
+      const stockText = selectedOption.textContent.match(/Ticket left: (\d+)/);
       const stock = stockText ? parseInt(stockText[1]) : 0;
 
       if (qty > stock) {

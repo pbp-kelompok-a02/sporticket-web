@@ -5,7 +5,7 @@ app_name = 'ticket'
 
 urlpatterns = [
 	path('events/<str:match_id>/', show_tickets, name='show_tickets'),
-    path('create-ticket/', create_ticket, name='create_ticket'),
+    path('create-ticket/<str:match_id>/', create_ticket, name='create_ticket'),
     path('<str:id>/edit/', edit_ticket, name='edit_ticket'),
     path('<str:id>/delete/', delete_ticket_ajax, name='delete_ticket_ajax'),
     path('json/', show_json, name='show_json'),

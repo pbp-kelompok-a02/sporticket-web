@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from .models import Order
 from ticket.models import Ticket
+from django.http import JsonResponse
+
 
 @login_required
 def create_order(request, ticket_id, order_id=None):
@@ -97,16 +99,27 @@ def cancel_order(request, order_id):
         order.cancel()
     return redirect("order:history")
 
+@login_required
+def cancel_order_ajax(request, order_id):
+    if request.method == "POST":
+        order = get_object_or_404(Order, pk=order_id, user=request.user)
+        if order.status in [Order.STATUS_PENDING, Order.STATUS_CONFIRMED]:
+            order.cancel()
+            return JsonResponse({"success": True, "status": "cancelled"})
+        return JsonResponse({"success": False, "error": "Order cannot be cancelled."}, status=400)
+    return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+
 # INI YANG BENER KODENYA
 @login_required
 def order_history(request):
-    # Ambil semua order dari user login
     orders = Order.objects.filter(user=request.user).select_related("ticket", "ticket__event")
 
-    context = {
-        "orders": orders
-    }
-    return render(request, "order/history.html", context)
+    status = request.GET.get("status")
+    if status:
+        orders = orders.filter(status=status)
+
+    return render(request, "order/history.html", {"orders": orders})
+
 
 # Testing
 # def order_history(request):

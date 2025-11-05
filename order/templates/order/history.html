@@ -15,6 +15,9 @@
     h1 {
       margin-bottom: 20px;
     }
+    form.filter-form {
+      margin-bottom: 20px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -24,7 +27,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     thead {
-      background: #3b5998; /* biru header */
+      background: #3b5998;
       color: white;
     }
     th, td {
@@ -35,7 +38,7 @@
       background: #f5f5f5;
     }
     tbody tr:hover {
-      outline: 2px solid #3b82f6; /* garis biru saat hover */
+      outline: 2px solid #3b82f6;
     }
     a {
       text-decoration: none;
@@ -45,14 +48,28 @@
       color: #111;
       font-weight: bold;
     }
-    a.delete {
+    button.delete-btn {
       color: red;
       font-weight: bold;
+      background: none;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Ticket History</h1>
+
+  <!-- Filter by status -->
+  <form method="get" class="filter-form">
+    <label for="status">Filter by status:</label>
+    <select name="status" id="status" onchange="this.form.submit()">
+      <option value="" {% if not request.GET.status %}selected{% endif %}>All</option>
+      <option value="pending" {% if request.GET.status == "pending" %}selected{% endif %}>Pending</option>
+      <option value="confirmed" {% if request.GET.status == "confirmed" %}selected{% endif %}>Confirmed</option>
+      <option value="cancelled" {% if request.GET.status == "cancelled" %}selected{% endif %}>Cancelled</option>
+    </select>
+  </form>
 
   <table>
     <thead>
@@ -66,7 +83,7 @@
     </thead>
     <tbody>
       {% for order in orders %}
-        <tr>
+        <tr id="order-row-{{ order.id }}">
           <td>{{ order.ticket.event.name }}</td>
           <td>{{ order.quantity }}</td>
           <td>{{ order.ticket.get_category_display }}</td>
@@ -74,7 +91,7 @@
           <td>
             {% if order.status == "pending" %}
               <a href="{% url 'order:edit' order.ticket.id order.id %}" class="edit">Edit</a>
-              <a href="{% url 'order:cancel' order.id %}" class="delete">Delete</a>
+              <button class="delete-btn" data-id="{{ order.id }}">Delete</button>
             {% elif order.status == "confirmed" %}
               Bought
             {% else %}
@@ -89,6 +106,40 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async function() {
+          const orderId = this.dataset.id;
+          if (!confirm("You sure you want to cancel this order?")) return;
+
+          try {
+            const response = await fetch(`/order/cancel-ajax/${orderId}/`, {
+              method: "POST",
+              headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-Requested-With": "XMLHttpRequest",
+              },
+            });
+
+            const data = await response.json();
+            if (data.success) {
+              const row = document.getElementById(`order-row-${orderId}`);
+              if (row) {
+                row.querySelector("td:last-child").innerHTML = "Cancelled";
+              }
+            } else {
+              alert("Error in cancelling order: " + data.error);
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error cancelling order.");
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
 {% endblock content %}
