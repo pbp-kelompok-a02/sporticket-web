@@ -13,30 +13,39 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <!-- Header Section -->
-    <div class="mb-8 mr-8">
+    <div class="relative w-full aspect-[21/9] md:aspect-[16/6] lg:aspect-[16/3] overflow-hidden rounded-b-xl mb-5">
       {% if event.category == 'badminton' %}
-        <img src="{% static 'image/banner_badminton.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_40%] z-0">
+        <img src="{% static 'image/banner_badminton.jpeg' %}" class="absolute inset-0 w-full h-full object-cover object-[0%_40%]">
       {% elif event.category == 'football' %}
-        <img src="{% static 'image/banner_football.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover z-0">
+        <img src="{% static 'image/banner_football.jpeg' %}" class="absolute inset-0 w-full h-full object-cover">
       {% elif event.category == 'basketball' %}
-        <img src="{% static 'image/banner_basketball.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_35%] z-0">
+        <img src="{% static 'image/banner_basketball.jpeg' %}" class="absolute inset-0 w-full h-full object-cover object-[0%_35%]">
       {% elif event.category == 'volleyball' %}
-        <img src="{% static 'image/banner_volleyball.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_65%] z-0">
+        <img src="{% static 'image/banner_volleyball.jpeg' %}" class="absolute inset-0 w-full h-full object-cover object-[0%_65%]">
       {% elif event.category == 'tennis' %}
-        <img src="{% static 'image/banner_tennis.jpeg' %}" class="absolute top-0 left-0 w-full h-[20vh] md:h-[30vh] lg:h-[45vh] object-cover object-[0%_30%] z-0">
+        <img src="{% static 'image/banner_tennis.jpeg' %}" class="absolute inset-0 w-full h-full object-cover object-[0%_30%]">
       {% endif %}
 
-      <h1 class="relative text-3xl text-white ml-5 mb-2 z-10">{{ event.name }}</h1>
-      <p class="relative text-4xl font-bold text-white ml-5 mb-3 z-10"><span class="text-blue-600">{{ event.home_team }}</span> vs <span class="text-red-600">{{ event.away_team }}</span></p>
-      <div class="relative flex gap-2 z-10 ml-5">
-        <img src="{% static 'image/date-icon.png' %}" class="w-5 h-5">
-        <p class="text-white">{{ event.date }}</p>
-      </div>
-      <div class="relative flex gap-2 z-10 ml-5">
-        <img src="{% static 'image/location-icon.png' %}" class="w-5 h-5">
-        <p class="text-white">{{ event.venue }}</p>
+      <!-- Text di atas banner -->
+      <div class="absolute bottom-4 left-5 z-10 text-white drop-shadow-md">
+        <h1 class="text-xl md:text-2xl lg:text-3xl mb-1">{{ event.name }}</h1>
+        <p class="text-2xl md:text-3xl lg:text-4xl font-bold mb-2">
+          <span class="text-blue-600">{{ event.home_team }}</span> 
+          vs 
+          <span class="text-red-600">{{ event.away_team }}</span>
+        </p>
+
+        <div class="flex items-center gap-2">
+          <img src="{% static 'image/date-icon.png' %}" class="w-5 h-5">
+          <p class="text-sm md:text-md lg:text-lg">{{ event.date }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <img src="{% static 'image/location-icon.png' %}" class="w-5 h-5">
+          <p class="text-sm md:text-md lg:text-lg">{{ event.venue }}</p>
+        </div>
       </div>
     </div>
+
 
     <!-- CEK USER ATAU ADMIN -->
     {% if user.is_superuser %}
