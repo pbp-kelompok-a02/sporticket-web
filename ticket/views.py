@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.utils.html import strip_tags
 from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
+import requests
 
 @login_required
 def show_tickets(request, match_id):
@@ -152,3 +153,27 @@ def edit_ticket_ajax(request, id):
         return JsonResponse({'updated': True, 'html': html})
     except Exception as e:
         return JsonResponse({'updated': False, 'error': str(e)}, status=400)
+    
+@csrf_exempt
+def create_ticket_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        event_id = data.get("event_id")
+        category = data.get("category")
+        price = data.get("price")
+        stock = data.get("stock")
+        
+        event= get_object_or_404(Event, match_id=event_id)
+        
+        new_ticket = Ticket(
+            event=event,
+            category=category,
+            price=price,
+            stock=stock,
+        )
+        new_ticket.save()
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)

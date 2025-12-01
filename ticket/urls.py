@@ -11,4 +11,5 @@ urlpatterns = [
     path('json/', show_json, name='show_json'),
     path('add-ticket/', add_ticket_ajax, name='add_ticket_ajax'),
     path('<str:id>/edit-ajax/', edit_ticket_ajax, name='edit_ticket_ajax'),
+    path('create-flutter/', create_ticket_flutter, name='create_ticket_flutter'),
 ]
