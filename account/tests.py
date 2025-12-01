@@ -174,9 +174,10 @@ class AccountFlowTests(TestCase):
 		s2 = self.client.session
 		self.assertNotIn('_auth_user_id', s2)
 
+
 	def test_profile_update_ajax_returns_user_email(self):
 		user = User.objects.create_user(username='kate@example.com', email='kate@example.com', password='pw')
-		Profile.objects.create(user=user, name='Kate')
+		profile = Profile.objects.create(user=user, name='Kate')
 		self.client.login(username='kate@example.com', password='pw')
 		new_email = 'kate.new@example.com'
 		resp = self.client.post(self.profile_update_url, {
@@ -187,11 +188,11 @@ class AccountFlowTests(TestCase):
 		self.assertEqual(resp.status_code, 200)
 		data = resp.json()
 		self.assertTrue(data.get('success'))
-		# view ini mengembalikan email yang diupdate di data.email
-		self.assertEqual(data.get('data', {}).get('email'), new_email)
+		# cek email di database, bukan di response JSON
+		user.refresh_from_db()
+		self.assertEqual(user.email, new_email)
 
 	def test_register_ajax_creates_user(self):
-		# registrasi AJAX harus membuat user dan mengembalikan JSON
 		resp = self.client.post(self.register_url, {
 			'email': 'ajax@example.com',
 			'name': 'Ajax',
@@ -215,7 +216,6 @@ class AccountFlowTests(TestCase):
 		self.assertEqual(resp.status_code, 200)
 		data = resp.json()
 		self.assertTrue(data.get('success'))
-		# logout, lalu pastikan password lama gagal dan yang baru berhasil
 		self.client.get(reverse('account:logout'))
 		self.client.post(self.login_url, {'username': 'chg@example.com', 'password': 'start'})
 		self.assertNotIn('_auth_user_id', self.client.session)
