@@ -94,7 +94,7 @@ def show_json(request, match_id=None):
         {
             'id': ticket.id,
             'event_id': ticket.event.match_id if ticket.event else None,
-            'category': ticket.event.category if ticket.event else None,
+            'category': ticket.category,
             'price': float(ticket.price),
             'stock': ticket.stock,
             'html': render_to_string('card_ticket.html', {'ticket': ticket, 'user': request.user}, request=request)
@@ -173,6 +173,30 @@ def create_ticket_flutter(request):
             stock=stock,
         )
         new_ticket.save()
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+    
+@csrf_exempt
+def edit_ticket_flutter(request, id):
+    if request.method == 'POST':
+        ticket = Ticket.objects.get(id=id)
+        data = json.loads(request.body)
+
+        ticket.category = data.get("category", ticket.category)
+        ticket.price = data.get("price", ticket.price)
+        ticket.stock = data.get("stock", ticket.stock)
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+    
+@csrf_exempt
+def delete_ticket_flutter(request, id):
+    if request.method == 'POST':
+        ticket = Ticket.objects.get(id=id)
+        ticket.delete()
         
         return JsonResponse({"status": "success"}, status=200)
     else:

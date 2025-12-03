@@ -26,6 +26,7 @@ urlpatterns = [
     path('review/', include('review.urls')),
     path('ticket/', include('ticket.urls')),
     path('', include('event.urls')),
+    path('auth/', include('authentication.urls')),
 ]
 
 # serve media files saat debug mode
