@@ -17,4 +17,5 @@ urlpatterns = [
     path('xml/<int:user_id>/', views.show_xml_by_id_user, name='show_xml_by_id_user'),
     path('json/<int:user_id>/', views.show_json_by_id_user, name='show_json_by_id_user'),
     path('login-mobile/', views.login_mobile, name='login_mobile'),
+    path('register-mobile/', views.register_mobile, name='register_mobile'),
 ]

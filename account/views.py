@@ -304,14 +304,27 @@ def show_json_by_id_user(request, user_id):
 @csrf_exempt
 def login_mobile(request):
     if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            email = data.get('username')
-            password = data.get('password')
-            
-            remember_me = data.get('remember_me', False) 
+        username = None
+        password = None
+        remember_me = False
 
-            user = authenticate(request, username=email, password=password)
+        try:
+            # coba ambil dari POST dulu
+            if 'username' in request.POST or 'password' in request.POST:
+                username = request.POST.get('username')
+                password = request.POST.get('password')
+                remember_me = request.POST.get('remember_me') == 'true'
+            
+            # kalo ga ada di POST, coba ambil dari JSON body
+            else:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+                rm_val = data.get('remember_me')
+                remember_me = rm_val == True or rm_val == 'true'
+
+            # validasi credentials
+            user = authenticate(request, username=username, password=password)
 
             if user is not None:
                 if user.is_active:
@@ -327,9 +340,7 @@ def login_mobile(request):
                         "message": "Login successful!",
                         "username": user.username,
                     }, status=200)
-
                     response.set_cookie('last_login', str(datetime.datetime.now()))
-                    
                     return response
                 else:
                     return JsonResponse({
@@ -341,7 +352,60 @@ def login_mobile(request):
                     "status": False,
                     "message": "Email or password is wrong."
                 }, status=401)
+
         except Exception as e:
-            return JsonResponse({"status": False, "message": str(e)}, status=500)
+            return JsonResponse({"status": False, "message": f"Server Error: {str(e)}"}, status=500)
             
     return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def register_mobile(request):
+    if request.method == 'POST':
+        try:            
+            name = request.POST.get('name', '')
+            email = request.POST.get('email', '')
+            password = request.POST.get('password', '')
+            password2 = request.POST.get('password2', '')
+            phone_number = request.POST.get('phone_number', '')
+            
+            # ambil file foto profil kalo ada
+            profile_photo = request.FILES.get('profile_photo') 
+
+            # validasi input (required fields)
+            if not email or not password or not name:
+                return JsonResponse({'success': False, 'message': 'All fields (name, email, password) are required.'}, status=400)
+            
+            # validasi password match atau tidak
+            if password != password2:
+                return JsonResponse({'success': False, 'message': 'Passwords do not match.'}, status=400)
+            
+            # cek email sudah terdaftar atau belum
+            if User.objects.filter(username=email).exists():
+                return JsonResponse({'success': False, 'message': 'Email is already registered.'}, status=400)
+
+            # buat user baru
+            user = User.objects.create_user(
+                username=email,
+                email=email,
+                password=password
+            )
+            
+            # buat profile baru
+            # kalo ada foto profile, simpan filenya
+            Profile.objects.create(
+                user=user,
+                name=name,
+                role='Buyer', 
+                phone_number=phone_number,
+                profile_photo=profile_photo
+            )
+            
+            return JsonResponse({
+                "success": True,
+                "message": "Registration successful! Please login.",
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+    return JsonResponse({"success": False, "message": "Invalid method"}, status=405)
