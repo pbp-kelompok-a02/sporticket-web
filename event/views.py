@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import user_passes_test
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -8,6 +10,7 @@ from order.models import Order
 from django.db.models import Avg, Count
 from event.models import Event
 from event.forms import EventForm
+import requests
 
 def is_admin(user):
     return user.is_authenticated and user.is_superuser
@@ -209,3 +212,154 @@ def show_json(request):
     ]
 
     return JsonResponse(data, safe=False)
+
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+
+
+@csrf_exempt
+def create_event_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        name = strip_tags(data.get('name', ''))
+        category = data.get('category', '').lower()
+        date = data.get('date', '')
+        venue = strip_tags(data.get('venue', ''))
+        capacity = data.get('capacity', 0)
+        home_team = strip_tags(data.get('home_team', ''))
+        away_team = strip_tags(data.get('away_team', ''))
+        description = strip_tags(data.get('description', ''))
+        poster = data.get('poster', '')
+
+        # Generate match_id based on category
+        category_prefixes = {
+            'basketball': 'N',
+            'badminton': 'B',
+            'football': 'F',
+            'tennis': 'T',
+            'volleyball': 'V'
+        }
+
+        prefix = category_prefixes.get(category, 'X')  # 'X' as fallback
+
+        event_count = Event.objects.filter(category=category).count()
+        next_number = event_count + 1
+        # Generate the match_id
+        match_id = f"{prefix}{next_number}"
+
+        # Check if match_id already exists (safety check)
+        while Event.objects.filter(match_id=match_id).exists():
+            next_number += 1
+            match_id = f"{prefix}{next_number}"
+
+        new_event = Event(
+            match_id=match_id,
+            name=name,
+            category=category,
+            date=date,
+            venue=venue,
+            capacity=capacity,
+            home_team=home_team,
+            away_team=away_team,
+            description=description,
+            poster=poster,
+        )
+        new_event.save()
+
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+
+
+@csrf_exempt
+def update_event_flutter(request, match_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+
+            # Get the existing event
+            try:
+                event = Event.objects.get(match_id=match_id)
+            except Event.DoesNotExist:
+                return JsonResponse({"status": "error", "message": "Event not found"}, status=404)
+
+
+            event.name = strip_tags(data.get('name', event.name))
+
+            new_date = data.get('date')
+            if new_date:
+                event.date = new_date
+
+            event.venue = strip_tags(data.get('venue', event.venue))
+
+
+            new_capacity = data.get('capacity')
+            if new_capacity:
+                event.capacity = new_capacity
+
+            event.home_team = strip_tags(data.get('home_team', event.home_team))
+            event.away_team = strip_tags(data.get('away_team', event.away_team))
+            event.description = strip_tags(data.get('description', event.description))
+            event.poster = data.get('poster', event.poster)
+
+            event.save()
+
+            return JsonResponse({
+                "status": "success",
+                "message": "Event updated successfully"
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            }, status=400)
+
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
+
+
+@csrf_exempt
+def delete_event_flutter(request, match_id):
+    if request.method == 'POST':
+        try:
+            # Get and delete event
+            event = Event.objects.get(match_id=match_id)
+            event.delete()
+
+            return JsonResponse({
+                "status": "success",
+                "message": "Event deleted successfully"
+            }, status=200)
+
+        except Event.DoesNotExist:
+            return JsonResponse({
+                "status": "error",
+                "message": "Event not found"
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            }, status=400)
+
+    return JsonResponse({
+        "status": "error",
+        "message": "Invalid method"
+    }, status=405)
