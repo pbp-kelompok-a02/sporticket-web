@@ -409,3 +409,100 @@ def register_mobile(request):
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
     return JsonResponse({"success": False, "message": "Invalid method"}, status=405)
+
+@csrf_exempt
+@login_required
+def profile_mobile(request):
+    try:
+        user = request.user
+        profile = user.profile
+        
+        data = {
+            'username': user.username,
+            'email': user.email,
+            'name': profile.name,
+            'role': profile.role,
+            'phone_number': profile.phone_number,
+            'profile_photo': profile.profile_photo.url if profile.profile_photo else None,
+            'is_superuser': user.is_superuser,
+        }
+        return JsonResponse({'status': True, 'data': data}, status=200)
+    except Exception as e:
+        return JsonResponse({'status': False, 'message': str(e)}, status=500)
+
+@csrf_exempt
+@login_required
+def edit_profile_mobile(request):
+    if request.method == 'POST':
+        try:
+            user = request.user
+            profile = user.profile
+            
+            # update fields kalo ada di request
+            if 'name' in request.POST:
+                profile.name = request.POST['name']
+            if 'phone_number' in request.POST:
+                profile.phone_number = request.POST['phone_number']
+                
+            # update foto profil kalo ada
+            if 'profile_photo' in request.FILES:
+                # hapus foto lama dulu kalo ada
+                if profile.profile_photo:
+                    profile.profile_photo.delete(save=False)
+                profile.profile_photo = request.FILES['profile_photo']
+            
+            profile.save()
+            
+            return JsonResponse({'status': True, 'message': 'Profile updated successfully!'}, status=200)
+        except Exception as e:
+            return JsonResponse({'status': False, 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': False, 'message': 'Invalid method'}, status=405)
+
+@csrf_exempt
+@login_required
+def change_password_mobile(request):
+    if request.method == 'POST':
+        try:
+            # coba ambil dari POST dulu
+            if 'current_password' in request.POST:
+                current_password = request.POST.get('current_password')
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+            
+            # kalo ga ada di POST, coba ambil dari JSON body
+            else:
+                data = json.loads(request.body)
+                current_password = data.get('current_password')
+                new_password = data.get('new_password')
+                confirm_password = data.get('confirm_password')
+
+            # validasi input
+            if not all([current_password, new_password, confirm_password]):
+                return JsonResponse({'status': False, 'message': 'All fields are required'}, status=400)
+
+            user = request.user
+            
+            if not user.check_password(current_password):
+                return JsonResponse({'status': False, 'message': 'Current password is incorrect'}, status=400)
+            
+            if new_password != confirm_password:
+                return JsonResponse({'status': False, 'message': 'New passwords do not match'}, status=400)
+                
+            user.set_password(new_password)
+            user.save()
+            update_session_auth_hash(request, user)  # buat session tetap valid setelah ganti password
+            
+            return JsonResponse({'status': True, 'message': 'Password changed successfully!'}, status=200)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'status': False, 'message': 'Invalid JSON format'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': False, 'message': str(e)}, status=500)
+
+    return JsonResponse({'status': False, 'message': 'Invalid method'}, status=405)
+
+@csrf_exempt
+def logout_mobile(request):
+    logout(request)
+    return JsonResponse({"status": True, "message": "Logout successful!"}, status=200)
