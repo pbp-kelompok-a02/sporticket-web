@@ -23,4 +23,5 @@ urlpatterns = [
     path('profile-mobile/<int:user_id>/', views.profile_mobile, name='profile_mobile_detail'),
     path('edit-profile-mobile/', views.edit_profile_mobile, name='edit_profile_mobile'),
     path('change-password-mobile/', views.change_password_mobile, name='change_password_mobile'),
+    path('delete-account-mobile/', views.delete_account_mobile, name='delete_account_mobile'),
 ]

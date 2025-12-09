@@ -1,3 +1,6 @@
+import base64
+import uuid
+from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
@@ -8,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from .forms import RegistrationForm, EmailAuthenticationForm, ProfileUpdateForm
 from django.core import serializers
+from django.core.files.base import ContentFile
 from django.urls import reverse
 import datetime
 from .models import Profile
@@ -362,44 +366,83 @@ def login_mobile(request):
 def register_mobile(request):
     if request.method == 'POST':
         try:            
-            name = request.POST.get('name', '')
-            email = request.POST.get('email', '')
-            password = request.POST.get('password', '')
-            password2 = request.POST.get('password2', '')
-            phone_number = request.POST.get('phone_number', '')
-            
-            # ambil file foto profil kalo ada
-            profile_photo = request.FILES.get('profile_photo') 
+            # handle JSON body atau form data
+            if request.content_type == 'application/json':
+                data = json.loads(request.body)
+                name = data.get('name', '')
+                email = data.get('email', '')
+                password = data.get('password', '')
+                password2 = data.get('password2', '')
+                phone_number = data.get('phone_number', '')
+                image_base64 = data.get('profile_photo', '')
+            else:
+                name = request.POST.get('name', '')
+                email = request.POST.get('email', '')
+                password = request.POST.get('password', '')
+                password2 = request.POST.get('password2', '')
+                phone_number = request.POST.get('phone_number', '')
+                image_base64 = request.POST.get('profile_photo', '')
 
-            # validasi input (required fields)
+            # validasi input
             if not email or not password or not name:
                 return JsonResponse({'success': False, 'message': 'All fields (name, email, password) are required.'}, status=400)
             
-            # validasi password match atau tidak
+            if '@' not in email:
+                 return JsonResponse({'success': False, 'message': 'Invalid email address.'}, status=400)
+
             if password != password2:
                 return JsonResponse({'success': False, 'message': 'Passwords do not match.'}, status=400)
             
-            # cek email sudah terdaftar atau belum
             if User.objects.filter(username=email).exists():
                 return JsonResponse({'success': False, 'message': 'Email is already registered.'}, status=400)
 
-            # buat user baru
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=password
-            )
-            
-            # buat profile baru
-            # kalo ada foto profile, simpan filenya
-            Profile.objects.create(
-                user=user,
-                name=name,
-                role='Buyer', 
-                phone_number=phone_number,
-                profile_photo=profile_photo
-            )
-            
+            # handle foto profile
+            profile_photo_file = None
+            if image_base64:
+                try:
+                    if ';base64,' in image_base64:
+                        format, imgstr = image_base64.split(';base64,') 
+                        ext = format.split('/')[-1] 
+                        image_bytes = base64.b64decode(imgstr)
+                    else:
+                        imgstr = image_base64
+                        ext = "jpg"
+                        image_bytes = base64.b64decode(imgstr)
+                    
+                    filename = f"profile_{uuid.uuid4()}.{ext}"
+                    profile_photo_file = ContentFile(image_bytes, name=filename)
+                except Exception as e:
+                    return JsonResponse({'success': False, 'message': f'Error processing image: {str(e)}'}, status=400)
+
+            # handle empty phone number
+            if not phone_number:
+                phone_number = None
+
+            # buat user dan profile
+            try:
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=password
+                )
+                
+                Profile.objects.create(
+                    user=user,
+                    name=name,
+                    role='Buyer', 
+                    phone_number=phone_number,
+                    profile_photo=profile_photo_file
+                )
+            except IntegrityError as e:
+                # handle unique constraint failures
+                if 'phone_number' in str(e):
+                    # hapus user yg baru dibuat karena gagal buat profile
+                    user.delete()
+                    return JsonResponse({'success': False, 'message': 'Phone number is already in use.'}, status=400)
+                else:
+                    user.delete()
+                    return JsonResponse({'success': False, 'message': f'Database error: {str(e)}'}, status=500)
+
             return JsonResponse({
                 "success": True,
                 "message": "Registration successful! Please login.",
@@ -470,18 +513,41 @@ def edit_profile_mobile(request):
             user = request.user
             profile = user.profile
             
-            # update fields kalo ada di request
-            if 'name' in request.POST:
-                profile.name = request.POST['name']
-            if 'phone_number' in request.POST:
-                profile.phone_number = request.POST['phone_number']
+            # handle JSON body
+            data = json.loads(request.body)
+            
+            # update fields kalo ada di data
+            if 'name' in data:
+                profile.name = data['name']
+            if 'phone_number' in data:
+                phone_number = data['phone_number']
+                # set to None kalo empty string untuk hindari unique constraint
+                profile.phone_number = phone_number if phone_number else None
                 
-            # update foto profil kalo ada
-            if 'profile_photo' in request.FILES:
-                # hapus foto lama dulu kalo ada
-                if profile.profile_photo:
-                    profile.profile_photo.delete(save=False)
-                profile.profile_photo = request.FILES['profile_photo']
+            # handle profile photo update
+            image_base64 = data.get('profile_photo')
+            if image_base64:
+                try:
+                    # decode base64 image
+                    if ';base64,' in image_base64:
+                        format, imgstr = image_base64.split(';base64,') 
+                        ext = format.split('/')[-1] 
+                        image_bytes = base64.b64decode(imgstr)
+                    else:
+                        imgstr = image_base64
+                        ext = "jpg"
+                        image_bytes = base64.b64decode(imgstr)
+                    
+                    filename = f"profile_{uuid.uuid4()}.{ext}"
+                    profile_photo_file = ContentFile(image_bytes, name=filename)
+                    
+                    # hapus foto lama kalo ada
+                    if profile.profile_photo:
+                        profile.profile_photo.delete(save=False)
+                        
+                    profile.profile_photo = profile_photo_file
+                except Exception as e:
+                    return JsonResponse({'status': False, 'message': f'Error processing image: {str(e)}'}, status=400)
             
             profile.save()
             
@@ -538,3 +604,19 @@ def change_password_mobile(request):
 def logout_mobile(request):
     logout(request)
     return JsonResponse({"status": True, "message": "Logout successful!"}, status=200)
+
+# delete account mobile
+@csrf_exempt
+@require_POST
+def delete_account_mobile(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': False, 'message': 'Login required.'}, status=401)
+    
+    user = request.user
+    try:
+        user.delete()
+        request.session.flush()
+        logout(request)
+        return JsonResponse({'status': True, 'message': 'Account deleted successfully.'}, status=200)
+    except Exception as e:
+        return JsonResponse({'status': False, 'message': f'Failed to delete account: {e}'}, status=500)
