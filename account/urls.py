@@ -20,6 +20,7 @@ urlpatterns = [
     path('register-mobile/', views.register_mobile, name='register_mobile'),
     path('logout-mobile/', views.logout_mobile, name='logout_mobile'),
     path('profile-mobile/', views.profile_mobile, name='profile_mobile'),
+    path('profile-mobile/<int:user_id>/', views.profile_mobile, name='profile_mobile_detail'),
     path('edit-profile-mobile/', views.edit_profile_mobile, name='edit_profile_mobile'),
     path('change-password-mobile/', views.change_password_mobile, name='change_password_mobile'),
 ]

@@ -411,20 +411,46 @@ def register_mobile(request):
     return JsonResponse({"success": False, "message": "Invalid method"}, status=405)
 
 @csrf_exempt
-@login_required
-def profile_mobile(request):
+def profile_mobile(request, user_id=None):
     try:
-        user = request.user
-        profile = user.profile
-        
+        # tentukan user target
+        if user_id:
+            target_user = get_object_or_404(User, pk=user_id)
+        else:
+            target_user = request.user
+
+        # cek hak akses viewer
+        viewer = request.user
+        viewer_is_admin = viewer.is_superuser or (
+            hasattr(viewer, 'profile') and viewer.profile.role == 'Admin'
+        )
+        is_own_profile = (viewer.pk == target_user.pk)
+        can_see_sensitive_data = is_own_profile or viewer_is_admin
+
+        # ambil data profile (handle jika profile tidak ada)
+        if hasattr(target_user, 'profile'):
+            profile = target_user.profile
+            name = profile.name
+            role = profile.role
+            phone_number = profile.phone_number
+            profile_photo = profile.profile_photo.url if profile.profile_photo else None
+        else:
+            # fallback jika superuser/user tanpa profile
+            name = None
+            role = 'Admin' if target_user.is_superuser else 'User'
+            phone_number = None
+            profile_photo = None
+
         data = {
-            'username': user.username,
-            'email': user.email,
-            'name': profile.name,
-            'role': profile.role,
-            'phone_number': profile.phone_number,
-            'profile_photo': profile.profile_photo.url if profile.profile_photo else None,
-            'is_superuser': user.is_superuser,
+            'username': target_user.username,
+            'email': target_user.email,
+            'name': name,
+            'role': role,
+            'phone_number': phone_number,
+            'profile_photo': profile_photo,
+            'is_superuser': target_user.is_superuser,
+            'is_own_profile': is_own_profile,
+            'can_see_sensitive_data': can_see_sensitive_data,
         }
         return JsonResponse({'status': True, 'data': data}, status=200)
     except Exception as e:
