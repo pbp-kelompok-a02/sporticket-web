@@ -430,18 +430,24 @@ def profile_mobile(request, user_id=None):
         # ambil data profile (handle jika profile tidak ada)
         if hasattr(target_user, 'profile'):
             profile = target_user.profile
+            profile_id = profile.id
+            user_pk = target_user.pk
             name = profile.name
             role = profile.role
             phone_number = profile.phone_number
             profile_photo = profile.profile_photo.url if profile.profile_photo else None
         else:
             # fallback jika superuser/user tanpa profile
+            profile_id = None 
+            user_pk = target_user.pk
             name = None
             role = 'Admin' if target_user.is_superuser else 'User'
             phone_number = None
             profile_photo = None
 
         data = {
+            'id': profile_id,
+            'user_id': user_pk,
             'username': target_user.username,
             'email': target_user.email,
             'name': name,
