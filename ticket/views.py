@@ -181,12 +181,14 @@ def create_ticket_flutter(request):
 @csrf_exempt
 def edit_ticket_flutter(request, id):
     if request.method == 'POST':
-        ticket = Ticket.objects.get(id=id)
+        ticket = Ticket.objects.get(pk=id)
         data = json.loads(request.body)
 
         ticket.category = data.get("category", ticket.category)
         ticket.price = data.get("price", ticket.price)
         ticket.stock = data.get("stock", ticket.stock)
+
+        ticket.save()
         
         return JsonResponse({"status": "success"}, status=200)
     else:
@@ -195,7 +197,7 @@ def edit_ticket_flutter(request, id):
 @csrf_exempt
 def delete_ticket_flutter(request, id):
     if request.method == 'POST':
-        ticket = Ticket.objects.get(id=id)
+        ticket = Ticket.objects.get(pk=id)
         ticket.delete()
         
         return JsonResponse({"status": "success"}, status=200)

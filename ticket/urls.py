@@ -13,6 +13,6 @@ urlpatterns = [
     path('add-ticket/', add_ticket_ajax, name='add_ticket_ajax'),
     path('<str:id>/edit-ajax/', edit_ticket_ajax, name='edit_ticket_ajax'),
     path('create-flutter/', create_ticket_flutter, name='create_ticket_flutter'),
-    path('edit-flutter/', edit_ticket_flutter, name='edit_ticket_flutter'),
-    path('delete-flutter/', delete_ticket_flutter, name='delete_ticket_flutter'),
+    path('edit-flutter/<str:id>/', edit_ticket_flutter, name='edit_ticket_flutter'),
+    path('delete-flutter/<str:id>/', delete_ticket_flutter, name='delete_ticket_flutter'),
 ]
