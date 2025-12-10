@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.contrib.auth import (
-    login, logout, get_user_model, update_session_auth_hash
+    login, logout, get_user_model, update_session_auth_hash, authenticate
 )
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -10,6 +10,9 @@ from .forms import RegistrationForm, EmailAuthenticationForm, ProfileUpdateForm
 from django.core import serializers
 from django.urls import reverse
 import datetime
+from .models import Profile
+import json
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
 
@@ -164,10 +167,7 @@ def profile_update(request):
                     'success': True,
                     'message': 'Profile updated successfully!',
                     'data': {
-                        'name': profile.name,
-                        'phone_number': profile.phone_number or '',
-                        'email': profile.user.email,
-                        'profile_photo_url': profile.profile_photo.url if profile.profile_photo else ''
+                        
                     }
                 })
             else:
@@ -262,9 +262,21 @@ def show_xml_user(request):
     return HttpResponse(data, content_type='application/xml')
 
 def show_json_user(request):
-    users = User.objects.all()
-    data = serializers.serialize('json', users)
-    return HttpResponse(data, content_type='application/json')
+    profiles = Profile.objects.select_related('user').all()
+    data = [
+        {
+            'id': profile.id,
+            'user_id': profile.user.id,
+            'username': profile.user.username,
+            'email': profile.email,
+            'name': profile.name,
+            'role': profile.role,
+            'phone_number': profile.phone_number,
+            'profile_photo': profile.profile_photo.url if profile.profile_photo else None,
+        }
+        for profile in profiles
+    ]
+    return JsonResponse(data, safe=False)
 
 def show_xml_by_id_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
@@ -272,6 +284,74 @@ def show_xml_by_id_user(request, user_id):
     return HttpResponse(data, content_type='application/xml')
 
 def show_json_by_id_user(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    data = serializers.serialize('json', [user])
-    return HttpResponse(data, content_type='application/json')
+    try:
+        user = User.objects.get(pk=user_id)
+        profile = user.profile
+        data = {
+            'id': profile.id,
+            'user_id': user.id,
+            'username': user.username,
+            'email': profile.email,
+            'name': profile.name,
+            'role': profile.role,
+            'phone_number': profile.phone_number,
+            'profile_photo': profile.profile_photo.url if profile.profile_photo else None,
+        }
+        return JsonResponse(data)
+    except (User.DoesNotExist, Profile.DoesNotExist):
+        return JsonResponse({'detail': 'Not found'}, status=404)
+
+@csrf_exempt
+def login_mobile(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('username')
+            password = data.get('password')
+            
+            remember_me = data.get('remember_me', False) 
+
+            user = authenticate(request, username=email, password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    
+                    if remember_me:
+                        request.session.set_expiry(1209600)  # 14 hari
+                    else:
+                        request.session.set_expiry(0) # saat browser ditutup
+                    
+                    response = JsonResponse({
+                        "status": True,
+                        "message": "Login successful!",
+                        "username": user.username,
+                    }, status=200)
+
+                    response.set_cookie('last_login', str(datetime.datetime.now()))
+                    
+                    return response
+                else:
+                    return JsonResponse({
+                        "status": False,
+                        "message": "Account is not active."
+                    }, status=401)
+            else:
+                return JsonResponse({
+                    "status": False,
+                    "message": "Email or password is wrong."
+                }, status=401)
+        except Exception as e:
+            return JsonResponse({"status": False, "message": str(e)}, status=500)
+            
+    return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
+
+def get_role_json(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'role': 'Guest'})
+
+    role = get_user_role(request.user)
+    
+    return JsonResponse({
+        "role": role
+    })
