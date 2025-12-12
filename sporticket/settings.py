@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'event',
     'order',
     'review',
+    'authentication',
     'corsheaders',
 ]
 
@@ -71,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'sporticket.urls'
@@ -172,4 +174,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # MEDIA (untuk ImageField)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-LOGIN_URL = '/account/login/' 
+LOGIN_URL = '/account/login/'
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
