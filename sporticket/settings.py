@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'event',
     'order',
     'review',
-    'authentication',
     'corsheaders',
 ]
 

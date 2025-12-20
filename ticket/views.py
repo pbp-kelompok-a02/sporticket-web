@@ -13,6 +13,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
 import requests
+from uuid import UUID
 
 @login_required
 def show_tickets(request, match_id):
@@ -196,10 +197,17 @@ def edit_ticket_flutter(request, id):
     
 @csrf_exempt
 def delete_ticket_flutter(request, id):
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({"error": "Invalid method"}, status=405)
+
+    try:
+        UUID(id)  
+    except ValueError:
+        return JsonResponse({"error": "Invalid UUID"}, status=400)
+
+    try:
         ticket = Ticket.objects.get(pk=id)
         ticket.delete()
-        
         return JsonResponse({"status": "success"}, status=200)
-    else:
-        return JsonResponse({"status": "error"}, status=401)
+    except Ticket.DoesNotExist:
+        return JsonResponse({"error": "Ticket not found"}, status=404)
