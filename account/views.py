@@ -581,9 +581,15 @@ def change_password_mobile(request):
 
             user = request.user
             
+            # cek current password
             if not user.check_password(current_password):
                 return JsonResponse({'status': False, 'message': 'Current password is incorrect'}, status=400)
             
+            # current password ga boleh sama dengan new password
+            if current_password == new_password:
+                return JsonResponse({'status': False, 'message': 'New password must be different from current password'}, status=400)
+            
+            # cek kecocokan new password dan confirm password
             if new_password != confirm_password:
                 return JsonResponse({'status': False, 'message': 'New passwords do not match'}, status=400)
                 
