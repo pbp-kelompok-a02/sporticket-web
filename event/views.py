@@ -339,8 +339,25 @@ def update_event_flutter(request, match_id):
 def delete_event_flutter(request, match_id):
     if request.method == 'POST':
         try:
-            # Get and delete event
             event = Event.objects.get(match_id=match_id)
+
+            # Check if event has any tickets that have been ordered
+            from ticket.models import Ticket
+            from order.models import Order
+
+            # Get all tickets for this event
+            event_tickets = Ticket.objects.filter(event=event)
+
+            # Check if ticket has order
+            has_orders = Order.objects.filter(ticket__in=event_tickets).exists()
+
+            if has_orders:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Cannot delete event. Tickets have already been purchased for this event."
+                }, status=200)
+
+            # If no orders, proceed with deletion
             event.delete()
 
             return JsonResponse({
@@ -352,14 +369,17 @@ def delete_event_flutter(request, match_id):
             return JsonResponse({
                 "status": "error",
                 "message": "Event not found"
-            }, status=404)
+            }, status=200)
         except Exception as e:
+            print(f"Error deleting event: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return JsonResponse({
                 "status": "error",
-                "message": str(e)
-            }, status=400)
-
-    return JsonResponse({
-        "status": "error",
-        "message": "Invalid method"
-    }, status=405)
+                "message": f"Failed to delete event: {str(e)}"
+            }, status=200)
+    else:
+        return JsonResponse({
+            "status": "error",
+            "message": "Invalid method"
+        }, status=200)
