@@ -363,7 +363,6 @@ def show_json_by_id_user(request, user_id):
 #     return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
 
 @csrf_exempt
-@require_POST
 def login_mobile(request):
     try:
         # DETEKSI FORMAT REQUEST
