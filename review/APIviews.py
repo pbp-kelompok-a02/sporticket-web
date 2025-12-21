@@ -9,45 +9,50 @@ from event.models import Event
 from order.models import Order
 
 def get_reviews_json(request, match_id):
-    print(f"DEBUG: View reached with ID: {match_id}")
-    """
-    API to fetch reviews for a specific event.
-    Returns JSON containing review list and user status.
-    """
+
+    print(f"User yang sedang request: {request.user}")
+    print(f"Apakah user authenticated? {request.user.is_authenticated}")
     event = get_object_or_404(Event, match_id=match_id)
-    reviews = Review.objects.filter(event=event).select_related('user').order_by('-created_at')
-    
-    # Check status for the current user
+
     user_has_ticket = False
     user_has_review = False
-    
-    if request.user.is_authenticated:
-        user_has_ticket = Order.objects.filter(
-            user=request.user, 
-            ticket__event=event, 
-            status='confirmed'
-        ).exists()
-        
-        user_has_review = Review.objects.filter(
-            user=request.user, 
-            event=event
-        ).exists()
 
-    # Manual serialization to control exactly what data is sent
+    # Cek status tiket & review
+    if request.user.is_authenticated:
+        try:
+            user_has_ticket = Order.objects.filter(user=request.user, ticket__event=event, status='confirmed').exists()
+        except NameError:
+            user_has_ticket = True 
+            
+        # Cek apakah user sudah pernah review
+        user_has_review = Review.objects.filter(event=event, user=request.user).exists()
+        
+    reviews = Review.objects.filter(event=event).select_related('user', 'user__profile').order_by('-created_at')
+
     data = []
     for review in reviews:
+        profile_photo_url = None
+        
+        # Check if user has a profile, and if that profile has an photo
+        try:
+            if review.user.profile.profile_photo:
+                profile_photo_url = review.user.profile.profile_photo.url
+        except AttributeError:
+            profile_photo_url = None
+
         data.append({
             "id": review.id,
             "user": review.user.username,
             "rating": review.rating,
             "komentar": review.komentar,
             "created_at": review.created_at.isoformat(),
-            "is_current_user": request.user == review.user
+            "is_current_user": request.user == review.user,
+            "profile_photo": profile_photo_url 
         })
 
     return JsonResponse({
         "reviews": data,
-        "user_has_ticket": user_has_ticket,
+        "user_has_ticket": user_has_ticket, 
         "user_has_review": user_has_review,
         "event_name": event.name 
     })
