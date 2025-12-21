@@ -305,114 +305,62 @@ def show_json_by_id_user(request, user_id):
     except (User.DoesNotExist, Profile.DoesNotExist):
         return JsonResponse({'detail': 'Not found'}, status=404)
 
-# @csrf_exempt
-# def login_mobile(request):
-#     if request.method == 'POST':
-#         username = None
-#         password = None
-#         remember_me = False
-
-#         try:
-#             # coba ambil dari POST dulu
-#             if 'username' in request.POST or 'password' in request.POST:
-#                 username = request.POST.get('username')
-#                 password = request.POST.get('password')
-#                 remember_me = request.POST.get('remember_me') == 'true'
-            
-#             # kalo ga ada di POST, coba ambil dari JSON body
-#             else:
-#                 data = json.loads(request.body)
-#                 username = data.get('username')
-#                 password = data.get('password')
-#                 rm_val = data.get('remember_me')
-#                 remember_me = rm_val == True or rm_val == 'true'
-
-#             # validasi credentials
-#             user = authenticate(request, username=username, password=password)
-
-#             if user is not None:
-#                 if user.is_active:
-#                     login(request, user)
-                    
-#                     if remember_me:
-#                         request.session.set_expiry(1209600)  # 14 hari
-#                     else:
-#                         request.session.set_expiry(0) # saat browser ditutup
-                    
-#                     response = JsonResponse({
-#                         "status": True,
-#                         "message": "Login successful!",
-#                         "username": user.username,
-#                     }, status=200)
-#                     response.set_cookie('last_login', str(datetime.datetime.now()))
-#                     return response
-#                 else:
-#                     return JsonResponse({
-#                         "status": False,
-#                         "message": "Account is not active."
-#                     }, status=401)
-#             else:
-#                 return JsonResponse({
-#                     "status": False,
-#                     "message": "Email or password is wrong."
-#                 }, status=401)
-
-#         except Exception as e:
-#             return JsonResponse({"status": False, "message": f"Server Error: {str(e)}"}, status=500)
-            
-#     return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def login_mobile(request):
-    try:
-        # DETEKSI FORMAT REQUEST
-        if request.POST:
-            username = request.POST.get('username')
-            password = request.POST.get('password')
-            remember_me = request.POST.get('remember_me') == 'true'
-        else:
-            data = json.loads(request.body.decode('utf-8'))
-            username = data.get('username')
-            password = data.get('password')
-            remember_me = str(data.get('remember_me')).lower() == 'true'
+    if request.method == 'POST':
+        username = None
+        password = None
+        remember_me = False
 
-        if not username or not password:
-            return JsonResponse({
-                "status": False,
-                "message": "Username and password are required."
-            }, status=400)
+        try:
+            # coba ambil dari POST dulu
+            if 'username' in request.POST or 'password' in request.POST:
+                username = request.POST.get('username')
+                password = request.POST.get('password')
+                remember_me = request.POST.get('remember_me') == 'true'
+            
+            # kalo ga ada di POST, coba ambil dari JSON body
+            else:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+                rm_val = data.get('remember_me')
+                remember_me = rm_val == True or rm_val == 'true'
 
-        user = authenticate(request, username=username, password=password)
+            # validasi credentials
+            user = authenticate(request, username=username, password=password)
 
-        if not user:
-            return JsonResponse({
-                "status": False,
-                "message": "Email or password is wrong."
-            }, status=401)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    
+                    if remember_me:
+                        request.session.set_expiry(1209600)  # 14 hari
+                    else:
+                        request.session.set_expiry(0) # saat browser ditutup
+                    
+                    response = JsonResponse({
+                        "status": True,
+                        "message": "Login successful!",
+                        "username": user.username,
+                    }, status=200)
+                    response.set_cookie('last_login', str(datetime.datetime.now()))
+                    return response
+                else:
+                    return JsonResponse({
+                        "status": False,
+                        "message": "Account is not active."
+                    }, status=401)
+            else:
+                return JsonResponse({
+                    "status": False,
+                    "message": "Email or password is wrong."
+                }, status=401)
 
-        login(request, user)
-        request.session.set_expiry(1209600 if remember_me else 0)
-
-        response = JsonResponse({
-            "status": True,
-            "message": "Login successful!",
-            "username": user.username,
-        }, status=200)
-
-        response.set_cookie('last_login', str(datetime.datetime.now()))
-        return response
-
-    except json.JSONDecodeError:
-        return JsonResponse({
-            "status": False,
-            "message": "Invalid JSON body."
-        }, status=400)
-
-    except Exception as e:
-        return JsonResponse({
-            "status": False,
-            "message": f"Server error: {str(e)}"
-        }, status=500)
+        except Exception as e:
+            return JsonResponse({"status": False, "message": f"Server Error: {str(e)}"}, status=500)
+            
+    return JsonResponse({"status": False, "message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def register_mobile(request):
