@@ -274,6 +274,8 @@ def edit_order_flutter(request, order_id):
         order.harga = new_ticket.price * new_quantity
 
         if new_status == "confirmed":
+            new_ticket.stock -= new_quantity  
+            new_ticket.save(update_fields=["stock"])
             order.status = Order.STATUS_CONFIRMED
 
         order.save()
