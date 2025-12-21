@@ -203,18 +203,37 @@ def edit_ticket_flutter(request, id):
         return JsonResponse({"status": "error"}, status=401)
     
 @csrf_exempt
+@csrf_exempt
 def delete_ticket_flutter(request, id):
     if request.method != 'POST':
-        return JsonResponse({"error": "Invalid method"}, status=405)
+        return JsonResponse({
+            "status": "error",
+            "message": "Invalid method"
+        }, status=405)
 
     try:
-        UUID(id)  
+        UUID(id)
     except ValueError:
-        return JsonResponse({"error": "Invalid UUID"}, status=400)
+        return JsonResponse({
+            "status": "error",
+            "message": "Invalid ticket ID"
+        }, status=400)
 
     try:
         ticket = Ticket.objects.get(pk=id)
         ticket.delete()
-        return JsonResponse({"status": "success"}, status=200)
+        return JsonResponse({
+            "status": "success"
+        }, status=200)
+
     except Ticket.DoesNotExist:
-        return JsonResponse({"error": "Ticket not found"}, status=404)
+        return JsonResponse({
+            "status": "error",
+            "message": "Ticket not found"
+        }, status=404)
+
+    except ProtectedError:
+        return JsonResponse({
+            "status": "error",
+            "message": "This ticket cannot be deleted because it has already been purchased."
+        }, status=400)
