@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.template.loader import render_to_string
 import requests
 from uuid import UUID
+from django.db.models import ProtectedError
 
 @login_required
 def show_tickets(request, match_id):
@@ -107,9 +108,15 @@ def show_json(request, match_id=None):
 @csrf_exempt
 def delete_ticket_ajax(request, id):
     if request.method == 'POST':
-        ticket = get_object_or_404(Ticket, pk=id)
-        ticket.delete()
-        return JsonResponse({'deleted': True})
+        try:
+            ticket = get_object_or_404(Ticket, pk=id)
+            ticket.delete()
+            return JsonResponse({'status': 'success'})
+        except ProtectedError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'This ticket cannot be deleted because it has already been purchased.'
+            }, status=400)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @csrf_exempt

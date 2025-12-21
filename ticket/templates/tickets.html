@@ -177,6 +177,8 @@ async function deleteTicket(id) {
     }
   });
 
+  const data = await response.json();
+
   if (response.ok) {
     const el = document.getElementById(`ticket-${id}`);
     if (el) el.remove();
@@ -193,7 +195,7 @@ async function deleteTicket(id) {
       `;
     }
   } else {
-    alert("Failed to delete ticket!");
+    alert(data.message || "Failed to delete ticket!");
   }
 }
 
