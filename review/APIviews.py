@@ -1,4 +1,5 @@
 from django.http import JsonResponse, Http404
+import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -39,15 +40,35 @@ def get_reviews_json(request, match_id):
                 profile_photo_url = review.user.profile.profile_photo.url
         except AttributeError:
             profile_photo_url = None
+        display_name = None
+        try:
+            prof = review.user.profile
+            try:
+                display_name = prof.get_display_name()
+            except Exception:
+                display_name = prof.name or ''
+        except Exception:
+            display_name = ''
+
+        if not display_name:
+            try:
+                full_name = review.user.get_full_name()
+                if full_name and full_name.strip():
+                    display_name = full_name
+                else:
+                    display_name = review.user.username
+            except Exception:
+                display_name = review.user.username
 
         data.append({
             "id": review.id,
-            "user": review.user.username,
+            "user": display_name,
+            "user_id": review.user.id,
             "rating": review.rating,
             "komentar": review.komentar,
             "created_at": review.created_at.isoformat(),
             "is_current_user": request.user == review.user,
-            "profile_photo": profile_photo_url 
+            "profile_photo": profile_photo_url,
         })
 
     return JsonResponse({
